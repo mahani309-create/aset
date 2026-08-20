@@ -1,0 +1,53 @@
+const fs = require('fs');
+
+const procurementTable = [
+'<table className="w-full text-sm text-left whitespace-nowrap">',
+'  <thead className="text-xs text-slate-500 uppercase bg-slate-50/50 border-b border-slate-100">',
+'    <tr>',
+'      <th className="px-6 py-3 font-medium w-12"><input type="checkbox" className="rounded border-slate-300 text-primary-600 focus:ring-primary-500" checked={selectedIds.length === filteredProcurements.length && filteredProcurements.length > 0} onChange={toggleSelectAll} /></th>',
+'      <th className="px-6 py-3 font-medium">Tanggal Pengajuan</th>',
+'      <th className="px-6 py-3 font-medium">Nama Item</th>',
+'      <th className="px-6 py-3 font-medium text-right">Jumlah</th>',
+'      <th className="px-6 py-3 font-medium text-right">Estimasi Total Harga</th>',
+'      <th className="px-6 py-3 font-medium">Sumber Dana</th>',
+'      <th className="px-6 py-3 font-medium">Status</th>',
+'      <th className="px-6 py-3 font-medium text-right">Aksi</th>',
+'    </tr>',
+'  </thead>',
+'  <tbody className="divide-y divide-slate-100">',
+'    {filteredProcurements.length > 0 ? (',
+'      filteredProcurements.map((item) => (',
+'        <tr key={item.id} className="hover:bg-slate-50/50 transition-colors">',
+'          <td className="px-6 py-4"><input type="checkbox" className="rounded border-slate-300 text-primary-600 focus:ring-primary-500" checked={selectedIds.includes(item.id)} onChange={() => toggleSelect(item.id)} /></td>',
+'          <td className="px-6 py-4 font-medium text-slate-900">{new Date(item.tanggalPengajuan).toLocaleDateString(\'id-ID\', { year: \'numeric\', month: \'short\', day: \'numeric\' })}</td>',
+'          <td className="px-6 py-4">{item.namaItem}</td>',
+'          <td className="px-6 py-4 text-right font-medium">{item.jumlah}</td>',
+'          <td className="px-6 py-4 text-right text-slate-900 font-medium">Rp {item.estimasiTotalHarga.toLocaleString(\'id-ID\')}</td>',
+'          <td className="px-6 py-4 text-slate-600">{item.sumberDana}</td>',
+'          <td className="px-6 py-4">',
+'            <Badge variant={item.status === "Disetujui" ? "success" : item.status === "Ditolak" ? "destructive" : "warning"}>',
+'              {item.status}',
+'            </Badge>',
+'          </td>',
+'          <td className="px-6 py-4 text-right pr-4">',
+'            <RowActions actions={[',
+'              { label: "Update Status", icon: Edit, onClick: () => { setSelectedItemId(item.id); setIsModalOpen(true); } },',
+'              { label: "Hapus", icon: Trash2, variant: "destructive", onClick: () => openDeleteModal(item.id, item.namaItem) }',
+'            ]} />',
+'          </td>',
+'        </tr>',
+'      ))',
+'    ) : (',
+'      <tr>',
+'        <td colSpan={8} className="px-6 py-10 text-center text-slate-500">',
+'          Tidak ada data pengajuan yang ditemukan.',
+'        </td>',
+'      </tr>',
+'    )}',
+'  </tbody>',
+'</table>'
+].join('\n');
+
+let content = fs.readFileSync('src/pages/Procurement.tsx', 'utf8');
+content = content.replace(/<table className="w-full text-sm text-left whitespace-nowrap">[\s\S]*?<\/table>/, procurementTable);
+fs.writeFileSync('src/pages/Procurement.tsx', content);
