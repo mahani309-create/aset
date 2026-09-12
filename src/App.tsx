@@ -19,6 +19,7 @@ import Stocktake from "./pages/Stocktake";
 import Depreciation from "./pages/Depreciation";
 import Disposal from "./pages/Disposal";
 import Settings from "./pages/Settings";
+import PortalPeminjaman from "./pages/PortalPeminjaman";
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const { isAuthenticated } = useAuth();
@@ -76,6 +77,7 @@ export default function App() {
             <HashRouter>
               <Routes>
                 <Route path="/login" element={<Login />} />
+                <Route path="/portal-peminjaman" element={<PortalPeminjaman />} />
                 <Route
                   path="/*"
                   element={

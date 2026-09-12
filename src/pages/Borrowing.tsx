@@ -209,9 +209,11 @@ const handleAction = (msg: string, type: 'info'|'success'|'error' = 'info') => t
                 className="w-full sm:w-auto appearance-none bg-white px-4 py-2 pr-10 text-sm border border-slate-300 rounded-lg focus:border-primary-500 focus:outline-none focus:ring-4 focus:ring-primary-500/10 transition-all hover:bg-slate-50 transition-colors shadow-sm"
               >
                 <option value="Semua">Semua Status</option>
+                <option value="Menunggu Persetujuan">Menunggu Persetujuan</option>
                 <option value="Dipinjam">Dipinjam</option>
                 <option value="Dikembalikan">Dikembalikan</option>
                 <option value="Terlambat">Terlambat</option>
+                <option value="Ditolak">Ditolak</option>
               </select>
               <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-600 pointer-events-none" />
             </div>
@@ -265,9 +267,25 @@ const handleAction = (msg: string, type: 'info'|'success'|'error' = 'info') => t
 <td className="px-6 py-4">{asset ? asset.nama : "Aset Tidak Ditemukan"}</td>
 <td className="px-6 py-4 text-slate-700">{new Date(borrow.tanggalPinjam).toLocaleDateString("id-ID")}</td>
 <td className="px-6 py-4 text-slate-700">{borrow.rencanaTanggalKembali ? new Date(borrow.rencanaTanggalKembali).toLocaleDateString("id-ID") : "-"}</td>
-<td className="px-6 py-4"><Badge variant={borrow.status === "Dipinjam" ? "warning" : borrow.status === "Terlambat" ? "destructive" : "success"}>{borrow.status}</Badge></td>
+<td className="px-6 py-4">
+  <Badge 
+    variant={
+      borrow.status === "Dipinjam" ? "warning" : 
+      borrow.status === "Terlambat" ? "destructive" : 
+      borrow.status === "Ditolak" ? "destructive" :
+      borrow.status === "Menunggu Persetujuan" ? "info" :
+      "success"
+    }
+  >
+    {borrow.status}
+  </Badge>
+</td>
           <td className="px-6 py-4 text-right pr-4">
             <RowActions actions={[
+              ...(borrow.status === 'Menunggu Persetujuan' ? [
+                { label: "Setujui", icon: CheckCircle, onClick: () => { setBorrowings(prev => prev.map(b => b.id === borrow.id ? { ...b, status: "Dipinjam" } : b)); handleAction("Peminjaman disetujui", "success"); } },
+                { label: "Tolak", icon: Trash2, variant: "destructive" as const, onClick: () => { setBorrowings(prev => prev.map(b => b.id === borrow.id ? { ...b, status: "Ditolak" } : b)); handleAction("Peminjaman ditolak", "info"); } }
+              ] : []),
               ...(borrow.status === 'Dipinjam' ? [
                 { label: "Kembalikan", icon: CheckCircle, onClick: () => { setBorrowings(prev => prev.map(b => b.id === borrow.id ? { ...b, status: "Dikembalikan", tanggalKembali: new Date().toISOString() } : b)); handleAction("Aset dikembalikan", "success"); } }
               ] : []),
@@ -351,9 +369,11 @@ const handleAction = (msg: string, type: 'info'|'success'|'error' = 'info') => t
             <div className="grid gap-2">
               <label className="text-sm font-medium text-slate-900">Status</label>
               <select name="status" defaultValue={selectedBorrowing?.status || 'Dipinjam'} className="border border-slate-300 rounded-lg px-3 py-2 text-sm focus:border-primary-500 focus:ring-4 focus:ring-primary-500/10 outline-none bg-white">
+                <option value="Menunggu Persetujuan">Menunggu Persetujuan</option>
                 <option value="Dipinjam">Sedang Dipinjam</option>
                 <option value="Terlambat">Terlambat</option>
                 <option value="Dikembalikan">Sudah Dikembalikan</option>
+                <option value="Ditolak">Ditolak</option>
               </select>
             </div>
           </div>
@@ -399,7 +419,10 @@ const handleAction = (msg: string, type: 'info'|'success'|'error' = 'info') => t
               <Badge 
                 variant={
                   selectedBorrowing.status === "Dipinjam" ? "warning" : 
-                  selectedBorrowing.status === "Dikembalikan" ? "success" : "destructive"
+                  selectedBorrowing.status === "Terlambat" ? "destructive" : 
+                  selectedBorrowing.status === "Ditolak" ? "destructive" :
+                  selectedBorrowing.status === "Menunggu Persetujuan" ? "info" :
+                  "success"
                 }
                 className="text-sm px-3 py-1"
               >

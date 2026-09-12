@@ -122,7 +122,7 @@ export interface Borrowing {
   kondisiPinjam?: string;
   kondisiKembali?: string;
   keterangan?: string;
-  status: "Dipinjam" | "Dikembalikan" | "Terlambat";
+  status: "Menunggu Persetujuan" | "Dipinjam" | "Dikembalikan" | "Terlambat" | "Ditolak";
 }
 
 export interface Procurement {
