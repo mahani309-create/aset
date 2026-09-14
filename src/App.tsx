@@ -20,10 +20,11 @@ import Depreciation from "./pages/Depreciation";
 import Disposal from "./pages/Disposal";
 import Settings from "./pages/Settings";
 import PortalPeminjaman from "./pages/PortalPeminjaman";
+import CetakBukti from "./pages/CetakBukti";
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const { isAuthenticated } = useAuth();
-  if (!isAuthenticated) return <Navigate to="/login" replace />;
+  if (!isAuthenticated) return <Navigate to="/portal-peminjaman" replace />;
   return <>{children}</>;
 }
 
@@ -78,6 +79,7 @@ export default function App() {
               <Routes>
                 <Route path="/login" element={<Login />} />
                 <Route path="/portal-peminjaman" element={<PortalPeminjaman />} />
+                <Route path="/cetak-bukti/:id" element={<CetakBukti />} />
                 <Route
                   path="/*"
                   element={

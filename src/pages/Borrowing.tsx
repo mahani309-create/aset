@@ -89,13 +89,19 @@ const handleAction = (msg: string, type: 'info'|'success'|'error' = 'info') => t
     const data: any = {
       peminjam: formData.get('peminjam'),
       nipPeminjam: formData.get('nipPeminjam'),
+      jabatan: formData.get('jabatan'),
       kontakPeminjam: formData.get('kontakPeminjam'),
+      alamat: formData.get('alamat'),
       unitKerja: formData.get('unitKerja'),
+      penanggungJawab: formData.get('penanggungJawab'),
+      lokasiPenggunaan: formData.get('lokasiPenggunaan'),
       keperluan: formData.get('keperluan'),
       keterangan: formData.get('keterangan'),
       kondisiPinjam: formData.get('kondisiPinjam'),
       kondisiKembali: formData.get('kondisiKembali'),
       assetId: formData.get('assetId'),
+      jumlah: parseInt(formData.get('jumlah') as string) || 1,
+      durasi: formData.get('durasi'),
       tanggalPinjam: formData.get('tanggalPinjam'),
       rencanaTanggalKembali: formData.get('rencanaTanggalKembali'),
       status: formData.get('status') || 'Dipinjam',
@@ -250,6 +256,8 @@ const handleAction = (msg: string, type: 'info'|'success'|'error' = 'info') => t
       <th className="px-6 py-3 font-medium w-12"><input type="checkbox" className="rounded border-slate-300 text-primary-600 focus:ring-primary-500" checked={selectedIds.length === filteredBorrowings.length && filteredBorrowings.length > 0} onChange={toggleSelectAll} /></th>
       <th className="px-6 py-3 font-medium">Peminjam</th>
       <th className="px-6 py-3 font-medium">Barang yang Dipinjam</th>
+      <th className="px-6 py-3 font-medium">Jumlah</th>
+      <th className="px-6 py-3 font-medium">Durasi</th>
       <th className="px-6 py-3 font-medium">Tanggal Pinjam</th>
       <th className="px-6 py-3 font-medium">Kembali Diharapkan</th>
       <th className="px-6 py-3 font-medium">Status</th>
@@ -265,6 +273,8 @@ const handleAction = (msg: string, type: 'info'|'success'|'error' = 'info') => t
           <td className="px-6 py-4"><input type="checkbox" className="rounded border-slate-300 text-primary-600 focus:ring-primary-500" checked={selectedIds.includes(borrow.id)} onChange={() => toggleSelect(borrow.id)} /></td>
 <td className="px-6 py-4 font-medium text-slate-900">{borrow.peminjam}</td>
 <td className="px-6 py-4">{asset ? asset.nama : "Aset Tidak Ditemukan"}</td>
+<td className="px-6 py-4 text-slate-700">{borrow.jumlah || 1}</td>
+<td className="px-6 py-4 text-slate-700">{borrow.durasi ? `${borrow.durasi} Hari` : '-'}</td>
 <td className="px-6 py-4 text-slate-700">{new Date(borrow.tanggalPinjam).toLocaleDateString("id-ID")}</td>
 <td className="px-6 py-4 text-slate-700">{borrow.rencanaTanggalKembali ? new Date(borrow.rencanaTanggalKembali).toLocaleDateString("id-ID") : "-"}</td>
 <td className="px-6 py-4">
@@ -342,6 +352,32 @@ const handleAction = (msg: string, type: 'info'|'success'|'error' = 'info') => t
               <input name="unitKerja" type="text" defaultValue={selectedBorrowing?.unitKerja || ''} className="border border-slate-300 rounded-lg px-3 py-2 text-sm focus:border-primary-500 focus:ring-4 focus:ring-primary-500/10 outline-none" placeholder="Kelas VII-A / Guru Olahraga" />
             </div>
           </div>
+          
+          <div className="grid gap-2">
+            <label className="text-sm font-medium text-slate-900">Alamat Lengkap</label>
+            <textarea name="alamat" rows={2} defaultValue={selectedBorrowing?.alamat || ''} className="border border-slate-300 rounded-lg px-3 py-2 text-sm focus:border-primary-500 focus:ring-4 focus:ring-primary-500/10 outline-none resize-none" placeholder="Masukkan alamat lengkap peminjam"></textarea>
+          </div>
+          
+          <div className="grid sm:grid-cols-3 gap-4">
+            <div className="grid gap-2">
+              <label className="text-sm font-medium text-slate-900">Jabatan / Status</label>
+              <select name="jabatan" defaultValue={selectedBorrowing?.jabatan || ''} className="border border-slate-300 rounded-lg px-3 py-2 text-sm focus:border-primary-500 focus:ring-4 focus:ring-primary-500/10 outline-none bg-white">
+                <option value="">Pilih status...</option>
+                <option value="Guru">Guru</option>
+                <option value="Staf / Karyawan">Staf / Karyawan</option>
+                <option value="Siswa">Siswa</option>
+                <option value="Lainnya">Lainnya</option>
+              </select>
+            </div>
+            <div className="grid gap-2">
+              <label className="text-sm font-medium text-slate-900">Penanggung Jawab</label>
+              <input name="penanggungJawab" type="text" defaultValue={selectedBorrowing?.penanggungJawab || ''} className="border border-slate-300 rounded-lg px-3 py-2 text-sm focus:border-primary-500 focus:ring-4 focus:ring-primary-500/10 outline-none" placeholder="Wali Kelas/Guru (Opsional)" />
+            </div>
+            <div className="grid gap-2">
+              <label className="text-sm font-medium text-slate-900">Lokasi Penggunaan</label>
+              <input name="lokasiPenggunaan" type="text" defaultValue={selectedBorrowing?.lokasiPenggunaan || ''} className="border border-slate-300 rounded-lg px-3 py-2 text-sm focus:border-primary-500 focus:ring-4 focus:ring-primary-500/10 outline-none" placeholder="Tempat digunakan" />
+            </div>
+          </div>
 
           <div className="grid gap-2">
             <label className="text-sm font-medium text-slate-900">Pilih Aset</label>
@@ -350,6 +386,17 @@ const handleAction = (msg: string, type: 'info'|'success'|'error' = 'info') => t
               {assets.filter(a => a.kondisi !== "Rusak Berat").map(a => <option key={a.id} value={a.id}>{a.nama} ({a.kodeBarang})</option>)}
             </select>
             <p className="text-xs text-slate-700">Hanya menampilkan aset dengan kondisi baik atau rusak ringan.</p>
+          </div>
+          
+          <div className="grid sm:grid-cols-2 gap-4">
+            <div className="grid gap-2">
+              <label className="text-sm font-medium text-slate-900">Jumlah (Opsional)</label>
+              <input name="jumlah" type="number" min="1" defaultValue={selectedBorrowing?.jumlah || 1} className="border border-slate-300 rounded-lg px-3 py-2 text-sm focus:border-primary-500 focus:ring-4 focus:ring-primary-500/10 outline-none" />
+            </div>
+            <div className="grid gap-2">
+              <label className="text-sm font-medium text-slate-900">Durasi Peminjaman (Opsional)</label>
+              <input name="durasi" type="number" min="1" defaultValue={selectedBorrowing?.durasi || ''} className="border border-slate-300 rounded-lg px-3 py-2 text-sm focus:border-primary-500 focus:ring-4 focus:ring-primary-500/10 outline-none" placeholder="Hari" />
+            </div>
           </div>
           
           <div className="grid gap-2">
@@ -433,10 +480,14 @@ const handleAction = (msg: string, type: 'info'|'success'|'error' = 'info') => t
             <div className="grid gap-4">
               <h5 className="font-semibold text-slate-900">Informasi Peminjam</h5>
               <div className="grid sm:grid-cols-2 text-sm gap-y-2 gap-x-4 mb-4">
-                <p><span className="text-slate-700">NIP/NIS:</span> <span className="font-medium text-slate-900">{selectedBorrowing.nipPeminjam || "-"}</span></p>
+                <p><span className="text-slate-700">NIP/NIS/NISN:</span> <span className="font-medium text-slate-900">{selectedBorrowing.nipPeminjam || "-"}</span></p>
+                <p><span className="text-slate-700">Jabatan:</span> <span className="font-medium text-slate-900">{selectedBorrowing.jabatan || "-"}</span></p>
                 <p><span className="text-slate-700">Unit Kerja/Kelas:</span> <span className="font-medium text-slate-900">{selectedBorrowing.unitKerja || "-"}</span></p>
                 <p><span className="text-slate-700">Kontak (HP):</span> <span className="font-medium text-slate-900">{selectedBorrowing.kontakPeminjam || "-"}</span></p>
+                <p className="sm:col-span-2"><span className="text-slate-700">Alamat:</span> <span className="font-medium text-slate-900">{selectedBorrowing.alamat || "-"}</span></p>
                 <p><span className="text-slate-700">Keperluan:</span> <span className="font-medium text-slate-900">{selectedBorrowing.keperluan || "-"}</span></p>
+                <p><span className="text-slate-700">Lokasi:</span> <span className="font-medium text-slate-900">{selectedBorrowing.lokasiPenggunaan || "-"}</span></p>
+                <p><span className="text-slate-700">Penanggung Jawab:</span> <span className="font-medium text-slate-900">{selectedBorrowing.penanggungJawab || "-"}</span></p>
               </div>
             </div>
 
@@ -447,6 +498,8 @@ const handleAction = (msg: string, type: 'info'|'success'|'error' = 'info') => t
                 <div className="grid sm:grid-cols-2 text-sm gap-2 mt-2">
                   <p><span className="text-slate-700">Kode Barang:</span> <span className="font-medium font-mono text-slate-700">{selectedBorrowAsset.kodeBarang}</span></p>
                   <p><span className="text-slate-700">Kategori:</span> <span className="font-medium text-slate-700">{selectedBorrowAsset.kategori}</span></p>
+                  <p><span className="text-slate-700">Jumlah:</span> <span className="font-medium text-slate-700">{selectedBorrowing.jumlah || 1} unit</span></p>
+                  <p><span className="text-slate-700">Durasi:</span> <span className="font-medium text-slate-700">{selectedBorrowing.durasi ? `${selectedBorrowing.durasi} Hari` : '-'}</span></p>
                   <p className="col-span-2"><span className="text-slate-700">Kondisi saat dipinjam:</span> <span className="font-medium text-slate-700">{selectedBorrowing.kondisiPinjam || selectedBorrowAsset.kondisi}</span></p>
                   {selectedBorrowing.kondisiKembali && (
                     <p className="col-span-2"><span className="text-slate-700">Kondisi saat kembali:</span> <span className="font-medium text-slate-700">{selectedBorrowing.kondisiKembali}</span></p>
@@ -532,9 +585,13 @@ const handleAction = (msg: string, type: 'info'|'success'|'error' = 'info') => t
                     <p style="font-size: 11pt;">Yang bertanda tangan di bawah ini:</p>
                     <table style="width: 100%; border: none; margin-bottom: 20px; font-size: 11pt;">
                       <tr><td style="width: 180px; border: none; padding: 2px;">Nama Lengkap</td><td style="border: none; padding: 2px;">: <strong>${selectedBorrowing.peminjam}</strong></td></tr>
-                      <tr><td style="border: none; padding: 2px;">NIP / NIS</td><td style="border: none; padding: 2px;">: <strong>${selectedBorrowing.nipPeminjam || "-"}</strong></td></tr>
+                      <tr><td style="border: none; padding: 2px;">NIP / NIS / NISN</td><td style="border: none; padding: 2px;">: <strong>${selectedBorrowing.nipPeminjam || "-"}</strong></td></tr>
+                      <tr><td style="border: none; padding: 2px;">Jabatan / Status</td><td style="border: none; padding: 2px;">: <strong>${selectedBorrowing.jabatan || "-"}</strong></td></tr>
                       <tr><td style="border: none; padding: 2px;">Unit Kerja / Kelas</td><td style="border: none; padding: 2px;">: <strong>${selectedBorrowing.unitKerja || "-"}</strong></td></tr>
+                      <tr><td style="border: none; padding: 2px;">Alamat Lengkap</td><td style="border: none; padding: 2px;">: <strong>${selectedBorrowing.alamat || "-"}</strong></td></tr>
                       <tr><td style="border: none; padding: 2px;">Kontak (No. HP)</td><td style="border: none; padding: 2px;">: <strong>${selectedBorrowing.kontakPeminjam || "-"}</strong></td></tr>
+                      <tr><td style="border: none; padding: 2px;">Lokasi Penggunaan</td><td style="border: none; padding: 2px;">: <strong>${selectedBorrowing.lokasiPenggunaan || "-"}</strong></td></tr>
+                      <tr><td style="border: none; padding: 2px;">Penanggung Jawab</td><td style="border: none; padding: 2px;">: <strong>${selectedBorrowing.penanggungJawab || "-"}</strong></td></tr>
                       <tr><td style="border: none; padding: 2px;">Keperluan</td><td style="border: none; padding: 2px;">: <strong>${selectedBorrowing.keperluan || "-"}</strong></td></tr>
                       <tr><td style="border: none; padding: 2px;">Tanggal Peminjaman</td><td style="border: none; padding: 2px;">: <strong>${borrowDate}</strong></td></tr>
                       <tr><td style="border: none; padding: 2px;">Rencana Pengembalian</td><td style="border: none; padding: 2px;">: <strong>${rencanaTanggalKembali}</strong></td></tr>

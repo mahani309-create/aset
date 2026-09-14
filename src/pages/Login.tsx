@@ -183,25 +183,21 @@ export default function Login() {
               >
                 <button
                   type="submit"
-                  className="w-full flex items-center justify-center py-4 px-4 border border-transparent rounded-2xl shadow-lg shadow-primary-500/20 text-sm font-bold text-white bg-primary-600 hover:bg-primary-700 hover:shadow-primary-600/30 active:scale-[0.98] focus:outline-none focus:ring-4 focus:ring-primary-500/30 transition-all group mb-4"
+                  className="w-full flex items-center justify-center py-4 px-4 border border-transparent rounded-2xl shadow-lg shadow-primary-500/20 text-sm font-bold text-white bg-primary-600 hover:bg-primary-700 hover:shadow-primary-600/30 active:scale-[0.98] focus:outline-none focus:ring-4 focus:ring-primary-500/30 transition-all group"
                 >
                   <span>Masuk Sistem</span>
                   <ArrowRight className="ml-2 h-4 w-4 transform group-hover:translate-x-1 transition-transform" />
                 </button>
                 
-                <div className="relative flex items-center py-2">
-                  <div className="flex-grow border-t border-slate-300"></div>
-                  <span className="flex-shrink-0 mx-4 text-slate-500 text-xs font-medium uppercase tracking-wider">Atau</span>
-                  <div className="flex-grow border-t border-slate-300"></div>
+                <div className="mt-6 text-center">
+                  <button
+                    type="button"
+                    onClick={() => navigate('/portal-peminjaman')}
+                    className="text-sm font-medium text-slate-600 hover:text-primary-600 transition-colors"
+                  >
+                    Kembali ke Portal Peminjaman
+                  </button>
                 </div>
-
-                <button
-                  type="button"
-                  onClick={() => navigate('/portal-peminjaman')}
-                  className="mt-4 w-full flex items-center justify-center py-3.5 px-4 border border-slate-300 rounded-2xl text-sm font-bold text-slate-700 bg-white hover:bg-slate-50 active:scale-[0.98] focus:outline-none focus:ring-4 focus:ring-slate-500/10 transition-all"
-                >
-                  Portal Pengajuan Peminjaman
-                </button>
               </motion.div>
             </form>
           </motion.div>

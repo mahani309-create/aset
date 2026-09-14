@@ -114,7 +114,11 @@ export interface Borrowing {
   peminjam: string;
   nipPeminjam?: string;
   kontakPeminjam?: string;
+  alamat?: string;
   unitKerja?: string;
+  jabatan?: string; // e.g. Guru, Siswa, Staf, etc.
+  lokasiPenggunaan?: string; // Where the asset will be used
+  penanggungJawab?: string; // Supervisor/Person in charge if applicable
   keperluan?: string;
   tanggalPinjam: string;
   rencanaTanggalKembali?: string;
@@ -122,6 +126,8 @@ export interface Borrowing {
   kondisiPinjam?: string;
   kondisiKembali?: string;
   keterangan?: string;
+  jumlah?: number;
+  durasi?: string;
   status: "Menunggu Persetujuan" | "Dipinjam" | "Dikembalikan" | "Terlambat" | "Ditolak";
 }
 
