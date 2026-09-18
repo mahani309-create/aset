@@ -14,7 +14,7 @@ import { ConfirmDeleteModal } from "../components/shared/ConfirmDeleteModal";
 import { RoomAssetsModal } from "../components/shared/RoomAssetsModal";
 import { RowActions } from "../components/shared/RowActions";
 
-import { exportToPdf } from "../lib/exportUtils";
+import { exportToPdf, exportToExcel } from "../lib/exportUtils";
 
 export default function Rooms() {
   const { rooms, setRooms, assets, schoolProfile } = useData();

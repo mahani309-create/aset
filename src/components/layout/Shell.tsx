@@ -22,6 +22,8 @@ import {
   Moon,
   WifiOff,
   Mic,
+  Menu,
+  X,
 } from "lucide-react";
 import { cn } from "../../lib/utils";
 import { useToast } from "../../contexts/ToastContext";
@@ -68,21 +70,48 @@ const navGroups = [
   },
 ];
 
-export function Sidebar() {
+export function Sidebar({ isOpen, onClose }: { isOpen?: boolean; onClose?: () => void }) {
   const location = useLocation();
   const toast = useToast();
   const { logout } = useAuth();
+  const { schoolProfile } = useData();
+  const appIcon = schoolProfile.logoAplikasi || schoolProfile.logoSekolah;
 
   return (
-    <div className="hidden print:hidden border-r border-slate-200 dark:border-slate-800 bg-white/50 dark:bg-slate-900/50 backdrop-blur-xl md:flex flex-col w-72 h-screen fixed top-0 left-0 z-40">
-      <div className="flex h-16 shrink-0 items-center border-b border-slate-200 dark:border-slate-800 px-6">
-        <div className="flex items-center gap-2 font-bold text-lg tracking-tight text-primary-950 dark:text-white">
-          <div className="h-8 w-8 rounded-lg bg-primary-600 flex items-center justify-center">
-            <Package className="h-5 w-5 text-primary-foreground" />
+    <>
+      {/* Mobile Backdrop */}
+      {isOpen && (
+        <div 
+          className="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 md:hidden" 
+          onClick={onClose}
+        />
+      )}
+
+      {/* Sidebar Container */}
+      <div className={cn(
+        "fixed top-0 left-0 z-50 h-screen w-72 flex flex-col bg-white/90 dark:bg-slate-900/90 backdrop-blur-xl border-r border-slate-200 dark:border-slate-800 transition-transform duration-300 ease-in-out md:translate-x-0 print:hidden",
+        isOpen ? "translate-x-0" : "-translate-x-full"
+      )}>
+        <div className="flex h-16 shrink-0 items-center justify-between border-b border-slate-200 dark:border-slate-800 px-6">
+          <div className="flex items-center gap-2 font-bold text-lg tracking-tight text-primary-950 dark:text-white">
+            <div className={cn("h-8 w-8 rounded-lg flex items-center justify-center overflow-hidden shrink-0", appIcon ? "bg-transparent" : "bg-primary-600")}>
+              {appIcon ? (
+                <img src={appIcon} alt="App Icon" className="h-full w-full object-contain" />
+              ) : (
+                <Package className="h-5 w-5 text-primary-foreground" />
+              )}
+            </div>
+            <span>Sarpras SMP</span>
           </div>
-          <span>Sarpras SMP</span>
+          
+          {/* Close button for mobile */}
+          <button 
+            onClick={onClose}
+            className="md:hidden p-2 text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200"
+          >
+            <X className="h-5 w-5" />
+          </button>
         </div>
-      </div>
       <div className="flex-1 overflow-y-auto py-4">
         {navGroups.map((group, i) => (
           <div key={i} className="mb-6 px-4">
@@ -138,6 +167,7 @@ export function Sidebar() {
         </button>
       </div>
     </div>
+    </>
   );
 }
 
@@ -212,7 +242,7 @@ export function Header() {
     searchResults.assets.length > 0 || searchResults.rooms.length > 0;
 
   return (
-    <header className="sticky print:hidden top-0 z-30 flex h-16 items-center gap-4 border-b border-slate-200 dark:border-slate-800 bg-white/50 dark:bg-slate-900/50 backdrop-blur-xl px-6">
+    <header className="sticky print:hidden top-0 z-30 flex h-14 md:h-16 items-center gap-4 border-b border-slate-200 dark:border-slate-800 bg-white/50 dark:bg-slate-900/50 backdrop-blur-xl px-4 sm:px-6">
       <div className="w-full flex-1">
         <form
           onSubmit={(e) => {
@@ -234,7 +264,7 @@ export function Header() {
                 setIsDropdownOpen(true);
               }}
               onFocus={() => setIsDropdownOpen(true)}
-              className="w-full appearance-none bg-slate-100/50 dark:bg-slate-800/50 pl-9 pr-20 py-2 rounded-lg text-sm border border-slate-200 dark:border-slate-700 focus:border-primary-500 focus:bg-white dark:focus:bg-slate-900 focus:outline-none focus:ring-4 focus:ring-primary-500/10 transition-all"
+              className="w-full appearance-none bg-slate-100/50 dark:bg-slate-800/50 pl-9 pr-20 py-1.5 md:py-2 rounded-lg text-xs md:text-sm border border-slate-200 dark:border-slate-700 focus:border-primary-500 focus:bg-white dark:focus:bg-slate-900 focus:outline-none focus:ring-4 focus:ring-primary-500/10 transition-all"
             />
             <div className="absolute right-1 flex items-center">
               <button
@@ -341,23 +371,23 @@ export function Header() {
       <div className="flex items-center gap-2 sm:gap-4">
         <button
           onClick={() => setThemeMode(themeMode === "dark" ? "light" : "dark")}
-          className="p-2 text-slate-600 hover:text-primary-600 transition-colors bg-white dark:bg-slate-800 rounded-full border border-slate-200 dark:border-slate-800 shadow-sm"
+          className="p-1.5 sm:p-2 text-slate-600 hover:text-primary-600 transition-colors bg-white dark:bg-slate-800 rounded-full border border-slate-200 dark:border-slate-800 shadow-sm"
           title="Ganti Tema (Gelap/Terang)"
         >
-          {themeMode === "dark" ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
+          {themeMode === "dark" ? <Sun className="h-4 w-4 sm:h-5 sm:w-5" /> : <Moon className="h-4 w-4 sm:h-5 sm:w-5" />}
         </button>
         <button
           onClick={() => toast("Belum ada notifikasi baru", "info")}
-          className="relative p-2 text-slate-600 hover:text-slate-700 transition-colors bg-white dark:bg-slate-800 rounded-full border border-slate-200 dark:border-slate-800 shadow-sm"
+          className="relative p-1.5 sm:p-2 text-slate-600 hover:text-slate-700 transition-colors bg-white dark:bg-slate-800 rounded-full border border-slate-200 dark:border-slate-800 shadow-sm"
         >
-          <Bell className="h-5 w-5" />
-          <span className="absolute top-[3px] right-[5px] h-2 w-2 rounded-full bg-rose-500 ring-2 ring-white" />
+          <Bell className="h-4 w-4 sm:h-5 sm:w-5" />
+          <span className="absolute top-[2px] right-[2px] sm:top-[3px] sm:right-[5px] h-1.5 w-1.5 sm:h-2 sm:w-2 rounded-full bg-rose-500 ring-2 ring-white" />
         </button>
         <div
-          className="h-9 w-9 ml-1 rounded-full bg-primary-100 border border-primary-200 flex items-center justify-center cursor-pointer hover:bg-primary-200 shadow-sm"
+          className="h-7 w-7 sm:h-9 sm:w-9 ml-0 sm:ml-1 rounded-full bg-primary-100 border border-primary-200 flex items-center justify-center cursor-pointer hover:bg-primary-200 shadow-sm"
           onClick={() => toast("Mode edit profil admin", "info")}
         >
-          <span className="text-sm font-bold text-primary-700">A</span>
+          <span className="text-xs sm:text-sm font-bold text-primary-700">A</span>
         </div>
       </div>
       <ScannerModal isOpen={isScannerOpen} onClose={() => setIsScannerOpen(false)} />
@@ -365,8 +395,54 @@ export function Header() {
   );
 }
 
+function BottomNav({ onMenuClick, onScanClick }: { onMenuClick: () => void, onScanClick: () => void }) {
+  const location = useLocation();
+  
+  return (
+    <div className="md:hidden fixed bottom-0 left-0 right-0 bg-white dark:bg-slate-900 border-t border-slate-200 dark:border-slate-800 flex items-center justify-around z-40 px-1 shadow-[0_-4px_20px_-10px_rgba(0,0,0,0.1)] pb-[env(safe-area-inset-bottom)]">
+      <div className="flex items-center justify-around w-full h-[56px]">
+        <Link to="/" className={cn("flex flex-col items-center gap-0.5 p-1 text-[9px] font-semibold transition-colors flex-1", location.pathname === '/' ? "text-primary-600" : "text-slate-500 hover:text-slate-900")}>
+          <LayoutDashboard className="h-[18px] w-[18px]" />
+          <span>Beranda</span>
+        </Link>
+        <Link to="/assets" className={cn("flex flex-col items-center gap-0.5 p-1 text-[9px] font-semibold transition-colors flex-1", location.pathname === '/assets' || location.pathname === '/rooms' ? "text-primary-600" : "text-slate-500 hover:text-slate-900")}>
+          <Package className="h-[18px] w-[18px]" />
+          <span>Aset</span>
+        </Link>
+        
+        {/* Floating Center Button */}
+        <div className="relative -top-4 flex-1 flex justify-center">
+          <button 
+            onClick={onScanClick}
+            className="h-12 w-12 rounded-full bg-primary-600 text-white flex items-center justify-center shadow-lg shadow-primary-500/40 border-[3px] border-slate-50 dark:border-slate-950 active:scale-95 transition-transform"
+          >
+            <ScanLine className="h-5 w-5" />
+          </button>
+        </div>
+
+        <Link to="/borrowing" className={cn("flex flex-col items-center gap-0.5 p-1 text-[9px] font-semibold transition-colors flex-1", location.pathname === '/borrowing' || location.pathname === '/procurement' ? "text-primary-600" : "text-slate-500 hover:text-slate-900")}>
+          <ArrowRightLeft className="h-[18px] w-[18px]" />
+          <span>Sirkulasi</span>
+        </Link>
+        <button onClick={onMenuClick} className={cn("flex flex-col items-center gap-0.5 p-1 text-[9px] font-semibold transition-colors flex-1", ['/settings', '/reports', '/maintenance'].includes(location.pathname) ? "text-primary-600" : "text-slate-500 hover:text-slate-900")}>
+          <Menu className="h-[18px] w-[18px]" />
+          <span>Menu</span>
+        </button>
+      </div>
+    </div>
+  );
+}
+
 export function Shell({ children }: { children: React.ReactNode }) {
   const [isOffline, setIsOffline] = useState(!navigator.onLine);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [isMobileScannerOpen, setIsMobileScannerOpen] = useState(false);
+  const location = useLocation();
+
+  // Close mobile menu when navigating
+  useEffect(() => {
+    setIsMobileMenuOpen(false);
+  }, [location.pathname]);
 
   useEffect(() => {
     const handleOnline = () => setIsOffline(false);
@@ -383,8 +459,8 @@ export function Shell({ children }: { children: React.ReactNode }) {
 
   return (
     <div className="min-h-screen bg-slate-50/50 dark:bg-slate-950/50 print:bg-white w-full flex text-slate-900 dark:text-slate-100 font-sans selection:bg-primary-100 selection:text-primary-900 overflow-x-hidden">
-      <Sidebar />
-      <div className="flex flex-col md:pl-72 print:pl-0 w-full">
+      <Sidebar isOpen={isMobileMenuOpen} onClose={() => setIsMobileMenuOpen(false)} />
+      <div className="flex flex-col md:pl-72 print:pl-0 w-full min-w-0 pb-[calc(64px+env(safe-area-inset-bottom))] md:pb-0">
         <Header />
         
         {isOffline && (
@@ -394,10 +470,17 @@ export function Shell({ children }: { children: React.ReactNode }) {
           </div>
         )}
 
-        <main className="flex-1 space-y-4 p-4 sm:p-8 pt-6 print:p-0 print:pt-0 w-full max-w-[100vw] sm:max-w-7xl mx-auto print:max-w-none">
+        <main className="flex-1 space-y-4 p-3 sm:p-6 md:p-8 pt-4 md:pt-6 print:p-0 print:pt-0 w-full max-w-[100vw] sm:max-w-7xl mx-auto print:max-w-none">
           {children}
         </main>
       </div>
+      
+      <BottomNav 
+        onMenuClick={() => setIsMobileMenuOpen(true)} 
+        onScanClick={() => setIsMobileScannerOpen(true)} 
+      />
+      
+      <ScannerModal isOpen={isMobileScannerOpen} onClose={() => setIsMobileScannerOpen(false)} />
     </div>
   );
 }

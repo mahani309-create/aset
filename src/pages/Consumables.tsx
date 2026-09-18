@@ -749,7 +749,7 @@ export default function Consumables() {
                   <h5 className="font-semibold text-slate-900">
                     Histori Pergerakan Barang Terakhir
                   </h5>
-                  <div className="border border-slate-300 rounded-lg overflow-hidden">
+                  <div className="border border-slate-300 rounded-lg overflow-hidden overflow-x-auto">
                     <table className="w-full text-sm text-left">
                       <thead className="bg-slate-50 border-b border-slate-300 text-slate-700 text-xs">
                         <tr>

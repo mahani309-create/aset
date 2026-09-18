@@ -89,7 +89,7 @@ export default function Dashboard() {
     >
       <motion.div variants={itemVariants} className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
-          <h2 className="text-3xl font-bold tracking-tight text-slate-950 dark:text-white">Dashboard Overview</h2>
+          <h2 className="text-2xl md:text-3xl font-bold tracking-tight text-slate-950 dark:text-white">Dashboard Overview</h2>
           <p className="text-slate-700 font-medium mt-1">Sistem Informasi Manajemen Barang & Aset Inventaris.</p>
         </div>
         <div className="flex flex-wrap items-center gap-2 lg:gap-3 w-full sm:w-auto">
@@ -107,7 +107,7 @@ export default function Dashboard() {
         </div>
       </motion.div>
 
-      <motion.div variants={itemVariants} className="grid gap-4 md:grid-cols-2 lg:grid-cols-5">
+      <motion.div variants={itemVariants} className="grid gap-3 sm:gap-4 md:grid-cols-2 lg:grid-cols-5">
         <Card className="hover:shadow-md transition-shadow relative overflow-hidden group">
           <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity group-hover:scale-110 duration-500">
             <Package className="h-24 w-24 text-primary-600" />
@@ -119,7 +119,7 @@ export default function Dashboard() {
             </div>
           </CardHeader>
           <CardContent className="relative z-10">
-            <div className="text-3xl font-bold text-slate-900 dark:text-white">{stats.totalAssets}</div>
+            <div className="text-2xl md:text-3xl font-bold text-slate-900 dark:text-white">{stats.totalAssets}</div>
             <p className="text-sm text-primary-600 font-semibold mt-1">Rp {stats.totalValue.toLocaleString('id-ID')}</p>
           </CardContent>
         </Card>
@@ -135,7 +135,7 @@ export default function Dashboard() {
             </div>
           </CardHeader>
           <CardContent className="relative z-10">
-            <div className="text-3xl font-bold text-slate-900 dark:text-white">{stats.goodCondition}</div>
+            <div className="text-2xl md:text-3xl font-bold text-slate-900 dark:text-white">{stats.goodCondition}</div>
             <p className="text-sm text-emerald-600 font-semibold mt-1">Aset siap pakai</p>
           </CardContent>
         </Card>
@@ -151,7 +151,7 @@ export default function Dashboard() {
             </div>
           </CardHeader>
           <CardContent className="relative z-10">
-            <div className="text-3xl font-bold text-slate-900 dark:text-white">{stats.needsRepair}</div>
+            <div className="text-2xl md:text-3xl font-bold text-slate-900 dark:text-white">{stats.needsRepair}</div>
             <p className="text-sm text-amber-600 font-semibold mt-1">Butuh perhatian</p>
           </CardContent>
         </Card>
@@ -167,7 +167,7 @@ export default function Dashboard() {
             </div>
           </CardHeader>
           <CardContent className="relative z-10">
-            <div className="text-3xl font-bold text-slate-900 dark:text-white">{stats.activeBorrowings}</div>
+            <div className="text-2xl md:text-3xl font-bold text-slate-900 dark:text-white">{stats.activeBorrowings}</div>
             <p className="text-sm text-blue-600 font-semibold mt-1">Sedang dipinjam</p>
           </CardContent>
         </Card>
@@ -183,13 +183,13 @@ export default function Dashboard() {
             </div>
           </CardHeader>
           <CardContent className="relative z-10">
-            <div className="text-3xl font-bold text-slate-900 dark:text-white">{stats.totalRooms}</div>
+            <div className="text-2xl md:text-3xl font-bold text-slate-900 dark:text-white">{stats.totalRooms}</div>
             <p className="text-sm text-indigo-600 font-semibold mt-1">Fasilitas ada</p>
           </CardContent>
         </Card>
       </motion.div>
 
-      <motion.div variants={itemVariants} className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
+      <motion.div variants={itemVariants} className="grid gap-3 sm:gap-4 md:grid-cols-2 lg:grid-cols-3">
         {kibStats.map((kib, idx) => (
           <Card key={idx} className="bg-gradient-to-br from-white to-slate-50/50 dark:from-slate-800 dark:to-slate-900 border-l-4 border-l-primary-500">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
@@ -197,7 +197,7 @@ export default function Dashboard() {
               <Package className="h-4 w-4 text-primary-400" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold text-slate-900 dark:text-white">{kib.count} <span className="text-sm font-normal text-slate-700">Item</span></div>
+              <div className="text-xl md:text-2xl font-bold text-slate-900 dark:text-white">{kib.count} <span className="text-sm font-normal text-slate-700">Item</span></div>
               <p className="text-sm text-slate-700 mt-1 font-medium">Nilai: Rp {kib.value.toLocaleString('id-ID')}</p>
             </CardContent>
           </Card>
@@ -326,7 +326,7 @@ export default function Dashboard() {
         </Card>
       </motion.div>
 
-      <motion.div variants={itemVariants} className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
+      <motion.div variants={itemVariants} className="grid gap-3 sm:gap-4 md:grid-cols-2 lg:grid-cols-3">
         <Card className="shadow-sm lg:col-span-2">
           <CardHeader className="border-b border-slate-300 dark:border-slate-800 pb-4">
             <CardTitle className="font-bold flex items-center gap-2">

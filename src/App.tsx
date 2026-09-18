@@ -2,7 +2,7 @@ import React from "react";
 import { HashRouter, Routes, Route, Navigate } from "react-router-dom";
 import { Shell } from "./components/layout/Shell";
 import { ToastProvider } from "./contexts/ToastContext";
-import { DataProvider } from "./contexts/DataContext";
+import { DataProvider, useData } from "./contexts/DataContext";
 import { ThemeProvider } from "./contexts/ThemeContext";
 import { AuthProvider, useAuth } from "./contexts/AuthContext";
 import Login from "./pages/Login";
@@ -69,12 +69,38 @@ function PageTransition({ children }: { children: React.ReactNode }) {
   );
 }
 
+function AppHead() {
+  const { schoolProfile } = useData();
+
+  React.useEffect(() => {
+    if (schoolProfile.nama) {
+      document.title = `SIM Sarpras - ${schoolProfile.nama}`;
+    }
+
+    const icon = schoolProfile.logoAplikasi || schoolProfile.logoSekolah;
+    if (icon) {
+      let link = document.querySelector("link[rel~='icon']") as HTMLLinkElement;
+      if (!link) {
+        link = document.createElement('link');
+        link.rel = 'icon';
+        document.head.appendChild(link);
+      }
+      link.href = icon;
+    }
+  }, [schoolProfile.nama, schoolProfile.logoAplikasi, schoolProfile.logoSekolah]);
+
+  return null;
+}
+
+import { PwaMobileInstall } from "./components/PwaMobileInstall";
+
 export default function App() {
   return (
     <ThemeProvider>
       <ToastProvider>
         <AuthProvider>
           <DataProvider>
+            <AppHead />
             <HashRouter>
               <Routes>
                 <Route path="/login" element={<Login />} />
@@ -91,6 +117,7 @@ export default function App() {
                   }
                 />
               </Routes>
+              <PwaMobileInstall />
             </HashRouter>
           </DataProvider>
         </AuthProvider>

@@ -226,7 +226,7 @@ const handleAction = (msg: string, type: 'info'|'success'|'error' = 'info') => t
           </div>
         )}
         <div className="overflow-x-auto min-h-[300px] pb-24">
-            <table className="w-full text-sm text-left">
+            <table className="w-full text-sm text-left whitespace-nowrap">
               <thead className="text-xs text-slate-700 uppercase bg-slate-50/50 border-b border-slate-300">
 <tr>
 <th className="px-6 py-3 font-medium w-12"><input type="checkbox" className="rounded border-slate-300 text-primary-600 focus:ring-primary-500" checked={selectedIds.length === filteredStocktakes.length && filteredStocktakes.length > 0} onChange={toggleSelectAll} /></th>
@@ -246,7 +246,7 @@ const handleAction = (msg: string, type: 'info'|'success'|'error' = 'info') => t
                     return (
                                           <tr key={item.id} className="hover:bg-slate-50/50 transition-colors">
                       <td className="px-6 py-4"><input type="checkbox" className="rounded border-slate-300 text-primary-600 focus:ring-primary-500" checked={selectedIds.includes(item.id)} onChange={() => toggleSelect(item.id)} /></td>
-                      <td className="px-6 py-4 font-medium text-slate-900">{new Date(item.tanggalMulai).toLocaleDateString("id-ID")}</td>
+                      <td className="px-6 py-4 font-medium text-slate-900">{new Date(item.tanggal).toLocaleDateString("id-ID")}</td>
                       <td className="px-6 py-4">{item.penanggungJawab}</td>
                       <td className="px-6 py-4 text-right font-medium">{item.totalAsetDiperiksa}</td>
                       <td className="px-6 py-4 text-right text-emerald-600 font-medium">{item.asetSesuai}</td>

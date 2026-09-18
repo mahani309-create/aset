@@ -14,7 +14,7 @@ import { ConfirmDeleteModal } from "../components/shared/ConfirmDeleteModal";
 import { exportToExcel, exportToPdf } from "../lib/exportUtils";
 
 export default function Disposal() {
-  const { disposals, setDisposals, assets } = useData();
+  const { disposals, setDisposals, assets, schoolProfile } = useData();
   const [searchTerm, setSearchTerm] = useState("");
   const [filterStatus, setFilterStatus] = useState("Semua");
   const [sortBy, setSortBy] = useState("Terbaru");
@@ -193,7 +193,7 @@ const handleAction = (msg: string, type: 'info'|'success'|'error' = 'info') => t
                 className="w-full sm:w-auto appearance-none bg-white px-4 py-2 pr-10 text-sm border border-slate-300 rounded-lg focus:border-primary-500 focus:outline-none focus:ring-4 focus:ring-primary-500/10 transition-all hover:bg-slate-50 transition-colors shadow-sm"
               >
                 <option value="Semua">Semua Status</option>
-                <option value="Pengajuan">Pengajuan</option>
+                <option value="Diajukan">Pengajuan</option>
                 <option value="Disetujui">Disetujui</option>
                 <option value="Selesai">Selesai</option>
               </select>
@@ -225,7 +225,7 @@ const handleAction = (msg: string, type: 'info'|'success'|'error' = 'info') => t
           </div>
         )}
         <div className="overflow-x-auto min-h-[300px] pb-24">
-            <table className="w-full text-sm text-left">
+            <table className="w-full text-sm text-left whitespace-nowrap">
               <thead className="text-xs text-slate-700 uppercase bg-slate-50/50 border-b border-slate-300">
 <tr>
 <th className="px-6 py-3 font-medium w-12"><input type="checkbox" className="rounded border-slate-300 text-primary-600 focus:ring-primary-500" checked={selectedIds.length === filteredDisposals.length && filteredDisposals.length > 0} onChange={toggleSelectAll} /></th>
@@ -251,7 +251,7 @@ const handleAction = (msg: string, type: 'info'|'success'|'error' = 'info') => t
                         <span className="text-slate-700 line-clamp-1" title={item.alasan}>{item.alasan}</span>
                       </td>
                       <td className="px-6 py-4">
-                        <Badge variant={item.status === "Selesai" ? "success" : item.status === "Disetujui" ? "success" : item.status === "Ditolak" ? "destructive" : "warning"}>
+                        <Badge variant={item.status === "Selesai" ? "success" : item.status === "Disetujui" ? "success" : item.status === "Selesai" ? "destructive" : "warning"}>
                           {item.status}
                         </Badge>
                       </td>
@@ -313,7 +313,7 @@ const handleAction = (msg: string, type: 'info'|'success'|'error' = 'info') => t
             <div className="grid gap-2">
               <label className="text-sm font-medium text-slate-900">Status</label>
               <select name="status" defaultValue={selectedDisposal.status} className="border border-slate-300 rounded-lg px-3 py-2 text-sm focus:border-primary-500 focus:ring-4 focus:ring-primary-500/10 outline-none bg-white">
-                <option value="Pengajuan">Dalam Pengajuan</option>
+                <option value="Diajukan">Dalam Pengajuan</option>
                 <option value="Disetujui">Disetujui Kepala Sekolah</option>
                 <option value="Selesai">Proses Selesai/Aset Dihapus</option>
               </select>
@@ -404,13 +404,13 @@ const handleAction = (msg: string, type: 'info'|'success'|'error' = 'info') => t
 
                 <div className="flex gap-4">
                   <div className="flex flex-col items-center">
-                    <div className={`w-8 h-8 rounded-full flex items-center justify-center ${selectedDisposal.status === "Pengajuan" ? 'bg-slate-100 text-slate-600' : 'bg-primary-100 text-primary-700'}`}>
-                       {selectedDisposal.status !== "Pengajuan" && <CheckCircle className="w-4 h-4" />}
+                    <div className={`w-8 h-8 rounded-full flex items-center justify-center ${selectedDisposal.status === "Diajukan" ? 'bg-slate-100 text-slate-600' : 'bg-primary-100 text-primary-700'}`}>
+                       {selectedDisposal.status !== "Diajukan" && <CheckCircle className="w-4 h-4" />}
                     </div>
                      <div className={`w-0.5 h-12 my-1 ${selectedDisposal.status === "Selesai" ? 'bg-primary-100' : 'bg-slate-100'}`}></div>
                   </div>
                   <div>
-                    <h6 className={`font-bold text-sm ${selectedDisposal.status === "Pengajuan" ? 'text-slate-700' : 'text-slate-900'}`}>Kepala Sekolah / Kuasa Pengguna Barang</h6>
+                    <h6 className={`font-bold text-sm ${selectedDisposal.status === "Diajukan" ? 'text-slate-700' : 'text-slate-900'}`}>Kepala Sekolah / Kuasa Pengguna Barang</h6>
                     <p className="text-slate-700 text-xs mt-0.5">Persetujuan untuk dilanjutkan ke proses {selectedDisposal.metode.toLowerCase()}.</p>
                   </div>
                </div>
@@ -434,12 +434,12 @@ const handleAction = (msg: string, type: 'info'|'success'|'error' = 'info') => t
               </Button>
                {selectedDisposal.status !== "Selesai" && (
                 <Button variant="default" className="flex-1" onClick={() => {
-                  const newStatus = selectedDisposal.status === "Pengajuan" ? "Disetujui" : "Selesai";
+                  const newStatus = selectedDisposal.status === "Diajukan" ? "Disetujui" : "Selesai";
                   setDisposals(prev => prev.map(d => d.id === selectedDisposal.id ? { ...d, status: newStatus } : d));
                   setIsDetailModalOpen(false);
                   handleAction(`Status penghapusan diupdate menjadi ${newStatus}`, 'success');
                 }}>
-                  {selectedDisposal.status === "Pengajuan" ? "Setujui Permohonan" : "Tandai Selesai Dieksekusi"}
+                  {selectedDisposal.status === "Diajukan" ? "Setujui Permohonan" : "Tandai Selesai Dieksekusi"}
                 </Button>
                )}
             </div>

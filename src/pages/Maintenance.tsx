@@ -14,7 +14,7 @@ import { ConfirmDeleteModal } from "../components/shared/ConfirmDeleteModal";
 import { motion, AnimatePresence } from "motion/react";
 
 export default function Maintenance() {
-  const { maintenances, setMaintenances, assets } = useData();
+  const { maintenances, setMaintenances, assets, schoolProfile } = useData();
   const [searchTerm, setSearchTerm] = useState("");
   const [filterStatus, setFilterStatus] = useState("Semua");
   const [sortBy, setSortBy] = useState("Terbaru");

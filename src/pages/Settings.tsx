@@ -5,12 +5,18 @@ import { Building2, Users, Database, Globe, Bell, Shield, Download, Upload, Plus
 import { useToast } from "../contexts/ToastContext";
 import { useData } from "../contexts/DataContext";
 import { useTheme } from "../contexts/ThemeContext";
+import { useAuth } from "../contexts/AuthContext";
+import { createGoogleSheetsBackup } from "../lib/googleSheets";
 
 export default function Settings() {
   const [activeTab, setActiveTab] = useState("sistem");
+  const [isBackingUp, setIsBackingUp] = useState(false);
   const toast = useToast();
-  const { schoolProfile, setSchoolProfile } = useData();
+  const dataContext = useData();
+  const { schoolProfile, setSchoolProfile } = dataContext;
   const { themeColor, setThemeColor, themeMode, setThemeMode, themeStyle, setThemeStyle, uiScale, setUiScale, fontColor, setFontColor } = useTheme();
+  const { accessToken, loginWithGoogle } = useAuth();
+
   
   // Profil State mapped to Context
   const profil = schoolProfile;
@@ -72,6 +78,40 @@ export default function Settings() {
     downloadAnchorNode.click();
     downloadAnchorNode.remove();
     handleAction("File backup berhasil diunduh.", "success");
+  };
+
+  const handleGoogleDriveBackup = async (forcePrompt: boolean = false) => {
+    try {
+      setIsBackingUp(true);
+      let token = accessToken;
+      
+      if (!token || forcePrompt) {
+        const loginRes = await loginWithGoogle(forcePrompt);
+        if (!loginRes.success) {
+          throw new Error('Gagal masuk ke Google. ' + (loginRes.code || ''));
+        }
+        token = loginRes.token || accessToken;
+        if (!token) {
+           handleAction("Berhasil masuk, namun token akses belum tersedia. Silakan coba lagi.", "info");
+           return;
+        }
+      }
+      
+      const sheetUrl = await createGoogleSheetsBackup(token, {
+        assets: dataContext.assets,
+        rooms: dataContext.rooms,
+        consumables: dataContext.consumables,
+        borrowings: dataContext.borrowings
+      });
+      
+      toast(`Backup berhasil disimpan di Google Drive!`, "success");
+      window.open(sheetUrl, '_blank');
+    } catch (err: any) {
+      console.error(err);
+      handleAction("Gagal menyimpan ke Google Drive. Pastikan Anda memberikan izin akses Google Sheets.", "error");
+    } finally {
+      setIsBackingUp(false);
+    }
   };
 
   const handleRestore = () => {
@@ -234,11 +274,11 @@ export default function Settings() {
                       />
                     </div>
                     <div className="space-y-2 md:col-span-2">
-                      <label className="text-sm font-semibold text-slate-900">Logo Dinas (Opsional)</label>
+                      <label className="text-sm font-semibold text-slate-900">Logo Dinas (Kiri - Opsional)</label>
                       <div className="flex items-center gap-4">
                         {profil.logoDinas && (
-                          <div className="w-16 h-16 rounded border border-slate-300 overflow-hidden flex items-center justify-center bg-white shrink-0">
-                            <img src={profil.logoDinas} alt="Logo" className="w-full h-full object-contain" />
+                          <div className="w-16 h-16 rounded border border-slate-300 overflow-hidden flex items-center justify-center bg-transparent shrink-0 ">
+                            <img src={profil.logoDinas} alt="Logo Dinas" className="w-full h-full object-contain" />
                           </div>
                         )}
                         <input 
@@ -249,7 +289,60 @@ export default function Settings() {
                             if (file) {
                               const reader = new FileReader();
                               reader.onloadend = () => {
-                                setProfil({ logoDinas: reader.result as string });
+                                setProfil({ ...profil, logoDinas: reader.result as string });
+                              };
+                              reader.readAsDataURL(file);
+                            }
+                          }}
+                          className="w-full border border-slate-300 bg-white rounded-lg px-3 py-2 text-sm focus:border-primary-500 focus:ring-4 focus:ring-primary-500/10 outline-none transition-all" 
+                        />
+                      </div>
+                    </div>
+                    
+                      <div className="space-y-2 md:col-span-2">
+                      <label className="text-sm font-semibold text-slate-900">Logo Sekolah (Kanan - Opsional)</label>
+                      <div className="flex items-center gap-4">
+                        {profil.logoSekolah && (
+                          <div className="w-16 h-16 rounded border border-slate-300 overflow-hidden flex items-center justify-center bg-transparent shrink-0 ">
+                            <img src={profil.logoSekolah} alt="Logo Sekolah" className="w-full h-full object-contain" />
+                          </div>
+                        )}
+                        <input 
+                          type="file" 
+                          accept="image/*"
+                          onChange={(e) => {
+                            const file = e.target.files?.[0];
+                            if (file) {
+                              const reader = new FileReader();
+                              reader.onloadend = () => {
+                                setProfil({ ...profil, logoSekolah: reader.result as string });
+                              };
+                              reader.readAsDataURL(file);
+                            }
+                          }}
+                          className="w-full border border-slate-300 bg-white rounded-lg px-3 py-2 text-sm focus:border-primary-500 focus:ring-4 focus:ring-primary-500/10 outline-none transition-all" 
+                        />
+                      </div>
+                    </div>
+
+                    <div className="space-y-2 md:col-span-2">
+                      <label className="text-sm font-semibold text-slate-900">Ikon Aplikasi & Tab (Favicon)</label>
+                      <p className="text-xs text-slate-500 mt-0">Digunakan sebagai ikon menu samping (sidebar) dan ikon tab browser. Gunakan rasio 1:1 (persegi).</p>
+                      <div className="flex items-center gap-4 mt-1">
+                        {profil.logoAplikasi && (
+                          <div className="w-16 h-16 rounded border border-slate-300 overflow-hidden flex items-center justify-center bg-transparent shrink-0 ">
+                            <img src={profil.logoAplikasi} alt="Ikon Aplikasi" className="w-full h-full object-contain" />
+                          </div>
+                        )}
+                        <input 
+                          type="file" 
+                          accept="image/*"
+                          onChange={(e) => {
+                            const file = e.target.files?.[0];
+                            if (file) {
+                              const reader = new FileReader();
+                              reader.onloadend = () => {
+                                setProfil({ ...profil, logoAplikasi: reader.result as string });
                               };
                               reader.readAsDataURL(file);
                             }
@@ -274,7 +367,7 @@ export default function Settings() {
                     </Button>
                   </div>
                   <div className="overflow-x-auto border border-slate-300 rounded-xl">
-                    <table className="w-full text-sm text-left">
+                    <table className="w-full text-sm text-left whitespace-nowrap">
                       <thead className="bg-slate-50 text-slate-700">
                         <tr>
                           <th className="px-4 py-3 font-semibold">Nama Lengkap</th>
@@ -638,10 +731,18 @@ export default function Settings() {
                           </CardTitle>
                         </CardHeader>
                         <CardContent className="pt-4 space-y-4">
-                          <p className="text-sm text-slate-700">Unduh seluruh data aset, ruangan, pemeliharaan ke dalam file format JSON/SQL.</p>
-                          <Button className="w-full" onClick={handleBackup}>
-                            <Download className="h-4 w-4 mr-2" /> Download Backup
-                          </Button>
+                          <p className="text-sm text-slate-700">Unduh seluruh data aset, ruangan, pemeliharaan ke dalam file format JSON, atau simpan ke Google Drive (Spreadsheet).</p>
+                          <div className="space-y-2">
+                            <Button className="w-full" onClick={handleBackup}>
+                              <Download className="h-4 w-4 mr-2" /> Download File Lokal
+                            </Button>
+                            <Button className="w-full bg-green-600 hover:bg-green-700 text-white" onClick={() => handleGoogleDriveBackup(false)} disabled={isBackingUp}>
+                              <Database className="h-4 w-4 mr-2" /> {isBackingUp ? "Menyimpan..." : "Simpan ke Google Drive (Sheets)"}
+                            </Button>
+                            <Button variant="outline" className="w-full border-slate-300 text-slate-700" onClick={() => handleGoogleDriveBackup(true)} disabled={isBackingUp}>
+                              Ganti Akun Google Drive
+                            </Button>
+                          </div>
                         </CardContent>
                       </Card>
                       

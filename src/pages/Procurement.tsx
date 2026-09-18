@@ -14,7 +14,7 @@ import { exportToExcel, exportToPdf } from "../lib/exportUtils";
 import { ConfirmDeleteModal } from "../components/shared/ConfirmDeleteModal";
 
 export default function Procurement() {
-  const { procurements, setProcurements } = useData();
+  const { procurements, setProcurements, schoolProfile } = useData();
   const [searchTerm, setSearchTerm] = useState("");
   const [filterStatus, setFilterStatus] = useState("Semua");
   const [sortBy, setSortBy] = useState("Terbaru");

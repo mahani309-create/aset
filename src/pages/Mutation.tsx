@@ -195,7 +195,7 @@ const handleAction = (msg: string, type: 'info'|'success'|'error' = 'info') => t
                 className="w-full sm:w-auto appearance-none bg-white px-4 py-2 pr-10 text-sm border border-slate-300 rounded-lg focus:border-primary-500 focus:outline-none focus:ring-4 focus:ring-primary-500/10 transition-all hover:bg-slate-50 transition-colors shadow-sm"
               >
                 <option value="Semua">Semua Status</option>
-                <option value="Proses">Proses</option>
+                <option value="Diajukan">Proses</option>
                 <option value="Selesai">Selesai</option>
               </select>
               <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-600 pointer-events-none" />
@@ -226,7 +226,7 @@ const handleAction = (msg: string, type: 'info'|'success'|'error' = 'info') => t
           </div>
         )}
         <div className="overflow-x-auto min-h-[300px] pb-24">
-            <table className="w-full text-sm text-left">
+            <table className="w-full text-sm text-left whitespace-nowrap">
               <thead className="text-xs text-slate-700 uppercase bg-slate-50/50 border-b border-slate-300">
 <tr>
 <th className="px-6 py-3 font-medium w-12"><input type="checkbox" className="rounded border-slate-300 text-primary-600 focus:ring-primary-500" checked={selectedIds.length === filteredMutations.length && filteredMutations.length > 0} onChange={toggleSelectAll} /></th>
@@ -260,7 +260,7 @@ const keRuang = rooms.find(r => r.id === item.keRuanganId);
                         <span className="text-slate-700 line-clamp-1" title={item.alasan}>{item.alasan}</span>
                       </td>
                       <td className="px-6 py-4">
-                        <Badge variant={item.status === "Selesai" ? "success" : item.status === "Disetujui" ? "success" : item.status === "Ditolak" ? "destructive" : "warning"}>
+                        <Badge variant={item.status === "Selesai" ? "success" : item.status === "Selesai" ? "success" : item.status === "Ditolak" ? "destructive" : "warning"}>
                           {item.status}
                         </Badge>
                       </td>
@@ -332,7 +332,7 @@ const keRuang = rooms.find(r => r.id === item.keRuanganId);
              <div className="grid gap-2">
               <label className="text-sm font-medium text-slate-900">Status</label>
               <select name="status" defaultValue={selectedMutation?.status || 'Proses'} className="border border-slate-300 rounded-lg px-3 py-2 text-sm focus:border-primary-500 focus:ring-4 focus:ring-primary-500/10 outline-none bg-white">
-                <option value="Proses">Dalam Proses Pindahan</option>
+                <option value="Diajukan">Dalam Proses Pindahan</option>
                 <option value="Selesai">Sudah Selesai Dipindah</option>
               </select>
             </div>

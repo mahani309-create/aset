@@ -836,7 +836,7 @@ function ReportPrintView({ reportId, data, onBack }: ReportPrintViewProps) {
         </div>
       </div>
       
-      <div id="print-area" className="max-w-4xl mx-auto mt-8 bg-white p-12 shadow-lg print:shadow-none print:m-0 print:p-4 print:max-w-none text-slate-900">
+      <div className="w-full overflow-x-auto print:overflow-visible"><div id="print-area" className="max-w-4xl mx-auto mt-8 bg-white p-4 sm:p-8 md:p-12 shadow-lg print:shadow-none print:m-0 print:p-4 print:max-w-none text-slate-900">
         {/* Kop Surat */}
         <div className="text-center border-b-[3px] border-double border-slate-900 pb-2 mb-6 flex items-center relative min-h-[80px]">
           {schoolProfile.logoDinas && (
@@ -884,6 +884,7 @@ function ReportPrintView({ reportId, data, onBack }: ReportPrintViewProps) {
             <p>NIP. {printNipOperator || "-"}</p>
           </div>
         </div>
+      </div>
       </div>
     </div>
   );

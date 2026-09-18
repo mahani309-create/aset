@@ -6,7 +6,7 @@ import { Link } from "react-router-dom";
 import { Badge } from "../components/ui/Badge";
 
 export default function PortalPeminjaman() {
-  const { assets, borrowings, setBorrowings } = useData();
+  const { assets, borrowings, setBorrowings, schoolProfile } = useData();
   const toast = useToast();
   
   const [activeTab, setActiveTab] = useState<"ajukan" | "status">("ajukan");
@@ -114,8 +114,12 @@ export default function PortalPeminjaman() {
 
       <header className="bg-white/70 backdrop-blur-xl border-b border-white/50 shadow-sm px-6 py-4 flex items-center justify-between sticky top-0 z-30">
         <div className="flex items-center gap-3">
-          <div className="h-10 w-10 rounded-xl bg-gradient-to-br from-primary-500 to-primary-700 flex items-center justify-center shadow-lg shadow-primary-500/20">
-            <Package className="h-5 w-5 text-white" />
+          <div className={`h-10 w-10 rounded-xl flex items-center justify-center overflow-hidden shrink-0 ${schoolProfile.logoAplikasi || schoolProfile.logoSekolah ? 'bg-transparent' : 'bg-gradient-to-br from-primary-500 to-primary-700 shadow-lg shadow-primary-500/20'}`}>
+            {schoolProfile.logoAplikasi || schoolProfile.logoSekolah ? (
+              <img src={schoolProfile.logoAplikasi || schoolProfile.logoSekolah} alt="App Icon" className="h-full w-full object-contain" />
+            ) : (
+              <Package className="h-5 w-5 text-white" />
+            )}
           </div>
           <div>
             <h1 className="text-xl font-bold text-slate-900 tracking-tight">Portal Peminjaman</h1>
@@ -131,8 +135,8 @@ export default function PortalPeminjaman() {
         
         {/* Hero Section */}
         <div className="text-center mb-10">
-          <h2 className="text-3xl sm:text-4xl font-extrabold text-slate-900 tracking-tight mb-4">
-            Layanan Peminjaman Aset
+          <h2 className="text-3xl sm:text-4xl font-extrabold text-slate-900 tracking-tight mb-4 leading-tight">
+            Layanan Peminjaman Aset <br className="hidden sm:block" /> {schoolProfile.nama}
           </h2>
           <p className="text-slate-600 max-w-2xl mx-auto text-base sm:text-lg">
             Ajukan peminjaman fasilitas dan inventaris sekolah dengan mudah. Pantau status pengajuan Anda secara real-time.

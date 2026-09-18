@@ -230,7 +230,7 @@ export function RoomAssetsModal({ isOpen, onClose, room, assets }: RoomAssetsMod
           {viewMode === "list" ? (
           <div className="bg-white border border-slate-300 rounded-xl overflow-hidden">
             <div className="overflow-x-auto">
-              <table className="w-full text-sm text-left">
+              <table className="w-full text-sm text-left whitespace-nowrap">
                 <thead className="bg-slate-50 border-b border-slate-300 text-slate-700">
                   <tr>
                     <th className="py-3 px-4 font-medium whitespace-nowrap">No</th>

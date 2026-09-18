@@ -5,7 +5,7 @@ import { Package } from 'lucide-react';
 
 export default function CetakBukti() {
   const { id } = useParams();
-  const { borrowings, assets } = useData();
+  const { borrowings, assets, schoolProfile } = useData();
   const navigate = useNavigate();
 
   const borrow = borrowings.find(b => b.id === id);
@@ -74,29 +74,37 @@ export default function CetakBukti() {
         <div className="flex items-center justify-between mb-2">
           {/* Logo Kiri */}
           <div className="w-24 h-24 flex-shrink-0 flex items-center justify-center">
-            <svg viewBox="0 0 100 100" className="w-20 h-20 text-slate-800" fill="currentColor">
-              <path d="M50 5 L85 25 L85 75 L50 95 L15 75 L15 25 Z" fill="none" stroke="currentColor" strokeWidth="3"/>
-              <circle cx="50" cy="50" r="20" fill="none" stroke="currentColor" strokeWidth="3"/>
-              <path d="M40 50 L60 50 M50 40 L50 60" stroke="currentColor" strokeWidth="3"/>
-            </svg>
+            {schoolProfile.logoDinas ? (
+              <img src={schoolProfile.logoDinas} alt="Logo Dinas" className="max-w-full max-h-full object-contain" />
+            ) : (
+              <svg viewBox="0 0 100 100" className="w-20 h-20 text-slate-800" fill="currentColor">
+                <path d="M50 5 L85 25 L85 75 L50 95 L15 75 L15 25 Z" fill="none" stroke="currentColor" strokeWidth="3"/>
+                <circle cx="50" cy="50" r="20" fill="none" stroke="currentColor" strokeWidth="3"/>
+                <path d="M40 50 L60 50 M50 40 L50 60" stroke="currentColor" strokeWidth="3"/>
+              </svg>
+            )}
           </div>
           
           {/* Teks Tengah */}
           <div className="flex-1 text-center px-4">
-            <h1 className="text-xl font-bold uppercase tracking-wide text-black leading-tight">Pemerintah Kota Belajar</h1>
-            <h2 className="text-lg font-bold uppercase tracking-wide text-black leading-tight">Dinas Pendidikan dan Kebudayaan</h2>
-            <h1 className="text-2xl font-black uppercase tracking-widest text-black mt-1 mb-1">SMP Negeri 1 Belajar</h1>
-            <p className="text-sm text-black">Jl. Pendidikan No. 1, Kec. Ilmu, Kota Belajar, Indonesia 12345</p>
-            <p className="text-xs text-black mt-0.5">Website: www.smpn1belajar.sch.id | Email: info@smpn1belajar.sch.id | Telp: (021) 1234567</p>
+            <h1 className="text-xl font-bold uppercase tracking-wide text-black leading-tight">Pemerintah Daerah</h1>
+            <h2 className="text-lg font-bold uppercase tracking-wide text-black leading-tight">{schoolProfile.kementerian}</h2>
+            <h1 className="text-2xl font-black uppercase tracking-widest text-black mt-1 mb-1">{schoolProfile.nama}</h1>
+            <p className="text-sm text-black">{schoolProfile.alamat}, Kode Pos: {schoolProfile.kodePos}</p>
+            <p className="text-xs text-black mt-0.5">Website: {schoolProfile.website} | Email: {schoolProfile.email} | Telp: {schoolProfile.telepon}</p>
           </div>
 
-          {/* Logo Kanan (Opsional, di sini kita gunakan logo Tut Wuri Handayani generik) */}
+          {/* Logo Kanan */}
           <div className="w-24 h-24 flex-shrink-0 flex items-center justify-center">
-             <svg viewBox="0 0 100 100" className="w-20 h-20 text-slate-800" fill="currentColor">
-              <path d="M10 50 C 10 20, 90 20, 90 50 C 90 80, 10 80, 10 50 Z" fill="none" stroke="currentColor" strokeWidth="3"/>
-              <path d="M30 45 L50 25 L70 45" fill="none" stroke="currentColor" strokeWidth="3"/>
-              <path d="M40 75 L50 55 L60 75" fill="none" stroke="currentColor" strokeWidth="3"/>
-            </svg>
+            {schoolProfile.logoSekolah ? (
+              <img src={schoolProfile.logoSekolah} alt="Logo Sekolah" className="max-w-full max-h-full object-contain" />
+            ) : (
+              <svg viewBox="0 0 100 100" className="w-20 h-20 text-slate-800" fill="currentColor">
+                <path d="M10 50 C 10 20, 90 20, 90 50 C 90 80, 10 80, 10 50 Z" fill="none" stroke="currentColor" strokeWidth="3"/>
+                <path d="M30 45 L50 25 L70 45" fill="none" stroke="currentColor" strokeWidth="3"/>
+                <path d="M40 75 L50 55 L60 75" fill="none" stroke="currentColor" strokeWidth="3"/>
+              </svg>
+            )}
           </div>
         </div>
         

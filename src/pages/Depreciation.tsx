@@ -157,7 +157,7 @@ return (
           </div>
         )}
         <div className="overflow-x-auto min-h-[300px] pb-24">
-            <table className="w-full text-sm text-left">
+            <table className="w-full text-sm text-left whitespace-nowrap">
               <thead className="text-xs text-slate-700 uppercase bg-slate-50/50 border-b border-slate-300">
 <tr>
 <th className="px-6 py-3 font-medium w-12"><input type="checkbox" className="rounded border-slate-300 text-primary-600 focus:ring-primary-500" checked={selectedIds.length === depreciatedAssets.length && depreciatedAssets.length > 0} onChange={toggleSelectAll} /></th>

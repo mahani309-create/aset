@@ -1,28 +1,34 @@
 import React, { useState } from "react";
 import { useNavigate, Navigate } from "react-router-dom";
 import { useAuth } from "../contexts/AuthContext";
+import { useData } from "../contexts/DataContext";
 import { Package, Lock, User, ArrowRight, ShieldCheck } from "lucide-react";
 import { useToast } from "../contexts/ToastContext";
 import { motion } from "motion/react";
 
 export default function Login() {
-  const [username, setUsername] = useState("");
-  const [password, setPassword] = useState("");
-  const { login, isAuthenticated } = useAuth();
+  const { loginWithGoogle, isAuthenticated } = useAuth();
+  const { schoolProfile } = useData();
   const navigate = useNavigate();
   const toast = useToast();
+  
+  const appIcon = schoolProfile.logoAplikasi || schoolProfile.logoSekolah;
 
   if (isAuthenticated) {
     return <Navigate to="/" replace />;
   }
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (login(username, password)) {
+  const handleGoogleLogin = async () => {
+    const result = await loginWithGoogle();
+    if (result.success) {
       toast("Login berhasil. Selamat datang!", "success");
       navigate("/");
     } else {
-      toast("Kredensial salah. Silakan coba lagi.", "error");
+      if (result.code === 'auth/popup-closed-by-user') {
+        toast("Login dibatalkan. Silakan coba lagi.", "info");
+      } else {
+        toast("Gagal masuk dengan Google. Silakan coba lagi.", "error");
+      }
     }
   };
 
@@ -53,7 +59,7 @@ export default function Login() {
         className="max-w-5xl w-full bg-white/80 backdrop-blur-xl border border-white rounded-3xl shadow-2xl overflow-hidden flex flex-col md:flex-row relative z-10"
       >
         {/* Left Side: Branding / Graphic */}
-        <div className="md:w-1/2 bg-gradient-to-br from-primary-600 to-primary-800 p-12 text-white flex flex-col justify-between relative overflow-hidden">
+        <div className="md:w-1/2 bg-gradient-to-br from-primary-600 to-primary-800 p-8 md:p-12 text-white flex flex-col justify-between relative overflow-hidden">
           {/* Animated overlapping circles inside banner */}
           <motion.div 
             initial={{ scale: 0.8, opacity: 0 }}
@@ -75,8 +81,12 @@ export default function Login() {
               transition={{ delay: 0.2, duration: 0.6 }}
               className="flex items-center gap-3 font-bold text-2xl tracking-tight mb-12"
             >
-              <div className="h-12 w-12 rounded-2xl bg-white/10 backdrop-blur-sm border border-white/20 flex items-center justify-center shadow-lg">
-                <Package className="h-7 w-7 text-white" />
+              <div className={`h-12 w-12 rounded-2xl flex items-center justify-center overflow-hidden shrink-0 ${appIcon ? 'bg-transparent' : 'bg-white/10 backdrop-blur-sm border border-white/20 shadow-lg'}`}>
+                {appIcon ? (
+                  <img src={appIcon} alt="App Icon" className="h-full w-full object-contain" />
+                ) : (
+                  <Package className="h-7 w-7 text-white" />
+                )}
               </div>
               <span>Sarpras SMP</span>
             </motion.div>
@@ -112,7 +122,7 @@ export default function Login() {
         </div>
 
         {/* Right Side: Login Form */}
-        <div className="md:w-1/2 p-12 lg:p-16 flex flex-col justify-center bg-white/50">
+        <div className="md:w-1/2 p-8 md:p-12 lg:p-16 flex flex-col justify-center bg-white/50">
           <motion.div 
             initial={{ x: 20, opacity: 0 }}
             animate={{ x: 0, opacity: 1 }}
@@ -122,84 +132,58 @@ export default function Login() {
             <div className="mb-10 text-center md:text-left">
               <h2 className="text-3xl font-extrabold text-slate-900 tracking-tight">Selamat Datang 👋</h2>
               <p className="text-slate-700 mt-3 text-sm flex items-center justify-center md:justify-start gap-1">
-                Silakan masuk menggunakan akun <strong className="text-slate-700">administrator</strong>.
+                Silakan masuk menggunakan <strong className="text-slate-700">Akun Google Anda</strong>.
               </p>
             </div>
 
-            <form onSubmit={handleSubmit} className="space-y-6">
+            <div className="space-y-6">
               <motion.div
                 initial={{ y: 10, opacity: 0 }}
                 animate={{ y: 0, opacity: 1 }}
                 transition={{ delay: 0.5, duration: 0.4 }}
               >
-                <label className="block text-sm font-semibold text-slate-700 mb-2">
-                  Username
-                </label>
-                <div className="relative group">
-                  <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none transition-colors group-focus-within:text-primary-600">
-                    <User className="h-5 w-5 text-slate-600 group-focus-within:text-primary-600 transition-colors" />
-                  </div>
-                  <input
-                    type="text"
-                    value={username}
-                    onChange={(e) => setUsername(e.target.value)}
-                    placeholder="Contoh: administrator"
-                    required
-                    className="block w-full pl-11 pr-4 py-3.5 border border-slate-300 rounded-2xl bg-white text-slate-900 placeholder-slate-400 sm:text-sm focus:outline-none focus:ring-4 focus:ring-primary-500/10 focus:border-primary-500 transition-all shadow-sm"
-                  />
-                </div>
+                <button
+                  type="button"
+                  onClick={handleGoogleLogin}
+                  className="w-full flex items-center justify-center py-4 px-4 border border-slate-300 rounded-2xl shadow-sm text-sm font-bold text-slate-700 bg-white hover:bg-slate-50 active:scale-[0.98] focus:outline-none focus:ring-4 focus:ring-primary-500/30 transition-all gap-3"
+                >
+                  <svg className="h-5 w-5" viewBox="0 0 24 24">
+                    <path
+                      d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
+                      fill="#4285F4"
+                    />
+                    <path
+                      d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"
+                      fill="#34A853"
+                    />
+                    <path
+                      d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"
+                      fill="#FBBC05"
+                    />
+                    <path
+                      d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"
+                      fill="#EA4335"
+                    />
+                  </svg>
+                  <span>Lanjutkan dengan Google</span>
+                </button>
               </motion.div>
-
+              
               <motion.div
                 initial={{ y: 10, opacity: 0 }}
                 animate={{ y: 0, opacity: 1 }}
                 transition={{ delay: 0.6, duration: 0.4 }}
-              >
-                <div className="flex justify-between items-center mb-2">
-                  <label className="block text-sm font-semibold text-slate-700">
-                    Password
-                  </label>
-                </div>
-                <div className="relative group">
-                  <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none transition-colors group-focus-within:text-primary-600">
-                    <Lock className="h-5 w-5 text-slate-600 group-focus-within:text-primary-600 transition-colors" />
-                  </div>
-                  <input
-                    type="password"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    placeholder="Masukkan sandi..."
-                    required
-                    className="block w-full pl-11 pr-4 py-3.5 border border-slate-300 rounded-2xl bg-white text-slate-900 placeholder-slate-400 sm:text-sm focus:outline-none focus:ring-4 focus:ring-primary-500/10 focus:border-primary-500 transition-all shadow-sm"
-                  />
-                </div>
-              </motion.div>
-
-              <motion.div
-                initial={{ y: 10, opacity: 0 }}
-                animate={{ y: 0, opacity: 1 }}
-                transition={{ delay: 0.7, duration: 0.4 }}
-                className="pt-2"
+                className="mt-6 text-center"
               >
                 <button
-                  type="submit"
-                  className="w-full flex items-center justify-center py-4 px-4 border border-transparent rounded-2xl shadow-lg shadow-primary-500/20 text-sm font-bold text-white bg-primary-600 hover:bg-primary-700 hover:shadow-primary-600/30 active:scale-[0.98] focus:outline-none focus:ring-4 focus:ring-primary-500/30 transition-all group"
+                  type="button"
+                  onClick={() => navigate('/portal-peminjaman')}
+                  className="text-sm font-medium text-slate-600 hover:text-primary-600 transition-colors"
                 >
-                  <span>Masuk Sistem</span>
-                  <ArrowRight className="ml-2 h-4 w-4 transform group-hover:translate-x-1 transition-transform" />
+                  Kembali ke Portal Peminjaman
                 </button>
-                
-                <div className="mt-6 text-center">
-                  <button
-                    type="button"
-                    onClick={() => navigate('/portal-peminjaman')}
-                    className="text-sm font-medium text-slate-600 hover:text-primary-600 transition-colors"
-                  >
-                    Kembali ke Portal Peminjaman
-                  </button>
-                </div>
               </motion.div>
-            </form>
+            </div>
           </motion.div>
         </div>
       </motion.div>

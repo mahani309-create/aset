@@ -250,7 +250,7 @@ const handleAction = (msg: string, type: 'info'|'success'|'error' = 'info') => t
           </div>
         )}
         <div className="overflow-x-auto min-h-[300px] pb-24">
-            <table className="w-full text-sm text-left">
+            <table className="w-full text-sm text-left whitespace-nowrap">
   <thead className="text-xs text-slate-700 uppercase bg-slate-50/50 border-b border-slate-300">
     <tr>
       <th className="px-6 py-3 font-medium w-12"><input type="checkbox" className="rounded border-slate-300 text-primary-600 focus:ring-primary-500" checked={selectedIds.length === filteredBorrowings.length && filteredBorrowings.length > 0} onChange={toggleSelectAll} /></th>
@@ -566,17 +566,25 @@ const handleAction = (msg: string, type: 'info'|'success'|'error' = 'info') => t
                   const pengelolaNip = nip1 ? (nip1.startsWith('NIP') ? nip1 : `NIP. ${nip1}`) : "";
 
                   const logoHtml = schoolProfile.logoDinas 
-                    ? `<img src="${schoolProfile.logoDinas}" alt="Logo" style="width: 60px; height: 60px; object-fit: contain; margin-right: 15px; position: absolute; left: 0; top: 0;" />` 
+                    ? `<img src="${schoolProfile.logoDinas}" alt="Logo Dinas" style="width: 75px; height: 75px; object-fit: contain; margin-right: 15px; position: absolute; left: 0; top: 0;" />` 
+                    : '';
+                    
+                  const logoKananHtml = schoolProfile.logoSekolah 
+                    ? `<img src="${schoolProfile.logoSekolah}" alt="Logo Sekolah" style="width: 75px; height: 75px; object-fit: contain; margin-left: 15px; position: absolute; right: 0; top: 0;" />` 
                     : '';
 
                   const docHtml = `
                     <div style="font-family: 'Times New Roman', Times, serif; line-height: 1.5; padding: 20px;">
-                      <div style="text-align: center; border-bottom: 3px double; padding-bottom: 10px; margin-bottom: 20px; position: relative; min-height: 70px;">
+                      <div style="text-align: center; border-bottom: 3px double; padding-bottom: 15px; margin-bottom: 25px; position: relative; min-height: 90px;">
                         ${logoHtml}
-                        <h3 style="margin: 0; font-size: 14pt; font-weight: bold; text-transform: uppercase;">${schoolProfile.kementerian || 'KEMENTERIAN PENDIDIKAN'}</h3>
-                        <h2 style="margin: 2px 0 5px; font-size: 16pt; font-weight: bold; text-transform: uppercase;">${schoolProfile.nama || 'NAMA SEKOLAH'}</h2>
-                        <p style="margin: 0; font-size: 11pt;">${schoolProfile.alamat || ''} ${schoolProfile.kodePos || ''}</p>
-                        <p style="margin: 0; font-size: 11pt; margin-bottom: 5px;">Telp: ${schoolProfile.telepon || '-'} | Email: ${schoolProfile.email || '-'} | Website: ${schoolProfile.website || '-'}</p>
+                        <div style="padding: 0 90px;">
+                          <h3 style="margin: 0; font-size: 14pt; font-weight: bold; text-transform: uppercase;">Pemerintah Daerah</h3>
+                          <h3 style="margin: 2px 0; font-size: 13pt; font-weight: bold; text-transform: uppercase;">${schoolProfile.kementerian || 'KEMENTERIAN PENDIDIKAN'}</h3>
+                          <h2 style="margin: 2px 0 5px; font-size: 16pt; font-weight: bold; text-transform: uppercase;">${schoolProfile.nama || 'NAMA SEKOLAH'}</h2>
+                          <p style="margin: 0; font-size: 11pt;">${schoolProfile.alamat || ''} ${schoolProfile.kodePos || ''}</p>
+                          <p style="margin: 0; font-size: 10pt; margin-bottom: 5px;">Telp: ${schoolProfile.telepon || '-'} | Email: ${schoolProfile.email || '-'} | Website: ${schoolProfile.website || '-'}</p>
+                        </div>
+                        ${logoKananHtml}
                       </div>
 
                       <h3 style="text-align: center; text-decoration: underline; margin-bottom: 5px; font-size: 12pt;">SURAT PEMINJAMAN SARANA DAN PRASARANA</h3>
