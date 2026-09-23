@@ -16,6 +16,9 @@ export interface Asset {
   harga: number;
   sumberDana: "BOS Reguler" | "BOS Kinerja" | "BOS Daerah (BOSDa)" | "Hibah / Sumbangan" | "Yayasan" | "Pemerintah Pusat" | "Lainnya";
   catatan?: string;
+  keterangan?: string;
+  asalUsul?: string;
+  ukuranBahan?: string;
   gambarUrl?: string;
   
   // Specific KIB A (Tanah) Properties
@@ -42,6 +45,9 @@ export interface Asset {
   dokumenGedungNomor?: string;
   statusTanah?: string;
   nomorKodeTanah?: string;
+  kondisiBangunan?: string;
+  createdAt?: string;
+  updatedAt?: string;
 
   // Specific KIB D (Jalan, Irigasi dan Jaringan) Properties
   konstruksi?: string;

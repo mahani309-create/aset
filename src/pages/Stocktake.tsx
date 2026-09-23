@@ -511,7 +511,7 @@ const handleAction = (msg: string, type: 'info'|'success'|'error' = 'info') => t
                           <p>${kepsekNip}</p>
                         </td>
                         <td style="width: 50%;">
-                          <p>Dilaksanakan di: ${schoolProfile?.desa || '______________'}</p>
+                          <p>Dilaksanakan di: ${schoolProfile?.alamat || '______________'}</p>
                           <p style="margin-bottom: 80px;">Penanggung Jawab / Auditor</p>
                           <p><strong>${pjName}</strong></p>
                           <p>${pjNip}</p>

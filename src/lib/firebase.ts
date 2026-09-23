@@ -4,8 +4,9 @@ import { getFirestore } from "firebase/firestore";
 import firebaseConfigJson from "../../firebase-applet-config.json";
 
 // The platform injects VITE_FIREBASE_CONFIG into the environment for web targets
-const firebaseConfig = import.meta.env.VITE_FIREBASE_CONFIG 
-  ? JSON.parse(import.meta.env.VITE_FIREBASE_CONFIG)
+const metaEnv = (import.meta as any).env;
+const firebaseConfig = metaEnv?.VITE_FIREBASE_CONFIG 
+  ? JSON.parse(metaEnv.VITE_FIREBASE_CONFIG)
   : firebaseConfigJson;
 
 const app = initializeApp(firebaseConfig);

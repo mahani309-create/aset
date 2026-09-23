@@ -175,7 +175,7 @@ return (
                     return (
                                           <tr key={item.id} className="hover:bg-slate-50/50 transition-colors">
                       <td className="px-6 py-4"><input type="checkbox" className="rounded border-slate-300 text-primary-600 focus:ring-primary-500" checked={selectedIds.includes(item.id)} onChange={() => toggleSelect(item.id)} /></td>
-                      <td className="px-6 py-4 font-medium text-slate-900">{item.nama} <span className="text-slate-700 font-normal">({item.kodeAset})</span></td>
+                      <td className="px-6 py-4 font-medium text-slate-900">{item.nama} <span className="text-slate-700 font-normal">({item.kodeBarang})</span></td>
                       <td className="px-6 py-4 text-center">{item.tahunPerolehan}</td>
                       <td className="px-6 py-4 text-right">Rp {item.harga.toLocaleString("id-ID")}</td>
                       <td className="px-6 py-4 text-right text-rose-600">Rp {item.akumulasiPenyusutan}</td>

@@ -117,7 +117,7 @@ export function ImportDataModal({ isOpen, onClose, onSuccess }: ImportDataModalP
         kondisi: row['Kondisi (Baik/Rusak Ringan/Rusak Berat)'] as "Baik" | "Rusak Ringan" | "Rusak Berat" || "Baik",
         harga: parseFloat(row['Harga/Nilai']) || 0,
         keterangan: row['Keterangan'] ? String(row['Keterangan']) : undefined,
-        sumberDana: row['Sumber Dana'] ? String(row['Sumber Dana']) : 'BOS',
+        sumberDana: (row['Sumber Dana'] as any) || 'BOS Reguler',
         ruanganId: roomId,
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString()

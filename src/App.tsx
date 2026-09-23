@@ -3,6 +3,7 @@ import { HashRouter, Routes, Route, Navigate } from "react-router-dom";
 import { Shell } from "./components/layout/Shell";
 import { ToastProvider } from "./contexts/ToastContext";
 import { DataProvider, useData } from "./contexts/DataContext";
+import { GoogleDriveProvider } from "./contexts/GoogleDriveContext";
 import { ThemeProvider } from "./contexts/ThemeContext";
 import { AuthProvider, useAuth } from "./contexts/AuthContext";
 import Login from "./pages/Login";
@@ -77,7 +78,7 @@ function AppHead() {
       document.title = `SIM Sarpras - ${schoolProfile.nama}`;
     }
 
-    const icon = schoolProfile.logoAplikasi || schoolProfile.logoSekolah;
+    const icon = schoolProfile.logoAplikasi || schoolProfile.logoSekolah || "/icon.svg";
     if (icon) {
       let link = document.querySelector("link[rel~='icon']") as HTMLLinkElement;
       if (!link) {
@@ -100,25 +101,27 @@ export default function App() {
       <ToastProvider>
         <AuthProvider>
           <DataProvider>
-            <AppHead />
-            <HashRouter>
-              <Routes>
-                <Route path="/login" element={<Login />} />
-                <Route path="/portal-peminjaman" element={<PortalPeminjaman />} />
-                <Route path="/cetak-bukti/:id" element={<CetakBukti />} />
-                <Route
-                  path="/*"
-                  element={
-                    <ProtectedRoute>
-                      <Shell>
-                        <AnimatedRoutes />
-                      </Shell>
-                    </ProtectedRoute>
-                  }
-                />
-              </Routes>
-              <PwaMobileInstall />
-            </HashRouter>
+            <GoogleDriveProvider>
+              <AppHead />
+              <HashRouter>
+                <Routes>
+                  <Route path="/login" element={<Login />} />
+                  <Route path="/portal-peminjaman" element={<PortalPeminjaman />} />
+                  <Route path="/cetak-bukti/:id" element={<CetakBukti />} />
+                  <Route
+                    path="/*"
+                    element={
+                      <ProtectedRoute>
+                        <Shell>
+                          <AnimatedRoutes />
+                        </Shell>
+                      </ProtectedRoute>
+                    }
+                  />
+                </Routes>
+                <PwaMobileInstall />
+              </HashRouter>
+            </GoogleDriveProvider>
           </DataProvider>
         </AuthProvider>
       </ToastProvider>

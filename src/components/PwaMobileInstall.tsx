@@ -52,7 +52,7 @@ export function PwaMobileInstall() {
   }
 
   return (
-    <div className="sm:hidden fixed bottom-4 left-4 right-4 z-50 animate-in slide-in-from-bottom-5">
+    <div className="sm:hidden fixed bottom-20 left-4 right-4 z-50 animate-in slide-in-from-bottom-5">
       <div className="bg-primary-900 text-white p-4 rounded-2xl shadow-xl flex items-center justify-between border border-primary-800">
         <div className="flex flex-col">
           <p className="font-semibold text-sm">Instal SIM Sarpras</p>

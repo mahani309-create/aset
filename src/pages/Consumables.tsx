@@ -397,7 +397,7 @@ export default function Consumables() {
                           />
                         </td>
                         <td className="px-6 py-4 font-medium text-slate-900 flex items-center gap-2">
-                          {isLowStock && <AlertTriangle className="h-4 w-4 text-rose-500 shrink-0" title="Stok Menipis!" />}
+                          {isLowStock && <span title="Stok Menipis!"><AlertTriangle className="h-4 w-4 text-rose-500 shrink-0" /></span>}
                           {item.nama}
                         </td>
                         <td className="px-6 py-4 text-slate-700">

@@ -23,6 +23,7 @@ export interface SchoolProfile {
   logoDinas?: string;
   logoSekolah?: string;
   logoAplikasi?: string;
+  adminPin?: string;
 }
 
 const defaultProfile: SchoolProfile = {
@@ -40,7 +41,8 @@ const defaultProfile: SchoolProfile = {
   nipOperator: "19850101 201001 2 002",
   logoDinas: "",
   logoSekolah: "",
-  logoAplikasi: ""
+  logoAplikasi: "/icon.svg",
+  adminPin: "123456"
 };
 
 interface DataContextType {
@@ -64,6 +66,9 @@ interface DataContextType {
   setStocktakes: React.Dispatch<React.SetStateAction<typeof mockStocktakes>>;
   disposals: typeof mockDisposals;
   setDisposals: React.Dispatch<React.SetStateAction<typeof mockDisposals>>;
+  getFullDatabase: () => Record<string, any>;
+  importFullDatabase: (data: any) => void;
+  resetToInitialData: () => void;
 }
 
 const DataContext = createContext<DataContextType | undefined>(undefined);
@@ -76,7 +81,14 @@ function useFirestoreDocument<T>(docId: string, initialValue: T) {
   const [storedValue, setStoredValue] = useState<T>(() => {
     try {
       const item = window.localStorage.getItem(`sarpras_${docId}`);
-      return item ? JSON.parse(item) : initialValue;
+      if (item) {
+        const parsed = JSON.parse(item);
+        if (docId === 'schoolProfile' && parsed && !parsed.logoAplikasi) {
+          parsed.logoAplikasi = '/icon.svg';
+        }
+        return parsed;
+      }
+      return initialValue;
     } catch {
       return initialValue;
     }
@@ -90,6 +102,9 @@ function useFirestoreDocument<T>(docId: string, initialValue: T) {
     const unsubscribe = onSnapshot(docRef, (docSnap) => {
       if (docSnap.exists()) {
         const data = docSnap.data().value as T;
+        if (docId === 'schoolProfile' && data && !(data as any).logoAplikasi) {
+          (data as any).logoAplikasi = '/icon.svg';
+        }
         setStoredValue(data);
         // Also update local storage for offline caching
         window.localStorage.setItem(`sarpras_${docId}`, JSON.stringify(data));
@@ -133,6 +148,48 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
   const [stocktakes, setStocktakes] = useFirestoreDocument('stocktakes', mockStocktakes);
   const [disposals, setDisposals] = useFirestoreDocument('disposals', mockDisposals);
 
+  const getFullDatabase = () => {
+    return {
+      schoolProfile,
+      assets,
+      rooms,
+      consumables,
+      procurements,
+      borrowings,
+      mutations,
+      maintenances,
+      stocktakes,
+      disposals,
+    };
+  };
+
+  const importFullDatabase = (data: any) => {
+    if (!data || typeof data !== 'object') return;
+    if (data.schoolProfile) setSchoolProfile(data.schoolProfile);
+    if (Array.isArray(data.assets)) setAssets(data.assets);
+    if (Array.isArray(data.rooms)) setRooms(data.rooms);
+    if (Array.isArray(data.consumables)) setConsumables(data.consumables);
+    if (Array.isArray(data.procurements)) setProcurements(data.procurements);
+    if (Array.isArray(data.borrowings)) setBorrowings(data.borrowings);
+    if (Array.isArray(data.mutations)) setMutations(data.mutations);
+    if (Array.isArray(data.maintenances)) setMaintenances(data.maintenances);
+    if (Array.isArray(data.stocktakes)) setStocktakes(data.stocktakes);
+    if (Array.isArray(data.disposals)) setDisposals(data.disposals);
+  };
+
+  const resetToInitialData = () => {
+    setSchoolProfile(defaultProfile);
+    setAssets(mockAssets);
+    setRooms(mockRooms);
+    setConsumables(mockConsumables);
+    setProcurements(mockProcurements);
+    setBorrowings(mockBorrowings);
+    setMutations(mockMutations);
+    setMaintenances(mockMaintenance);
+    setStocktakes(mockStocktakes);
+    setDisposals(mockDisposals);
+  };
+
   return (
     <DataContext.Provider value={{
       schoolProfile, setSchoolProfile,
@@ -144,7 +201,10 @@ export function DataProvider({ children }: { children: React.ReactNode }) {
       mutations, setMutations,
       maintenances, setMaintenances,
       stocktakes, setStocktakes,
-      disposals, setDisposals
+      disposals, setDisposals,
+      getFullDatabase,
+      importFullDatabase,
+      resetToInitialData
     }}>
       {children}
     </DataContext.Provider>

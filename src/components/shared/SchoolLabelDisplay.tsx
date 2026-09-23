@@ -24,8 +24,8 @@ export function SchoolLabelDisplay({ asset, roomName }: SchoolLabelDisplayProps)
       >
         {/* Header Label */}
         <div className="flex items-center pb-2.5 border-b border-slate-800">
-          {schoolProfile?.logo ? (
-            <img src={schoolProfile.logo} alt="Logo" className="w-10 h-10 object-contain mr-3" />
+          {(schoolProfile?.logoSekolah || (schoolProfile as any)?.logo) ? (
+            <img src={schoolProfile?.logoSekolah || (schoolProfile as any)?.logo} alt="Logo" className="w-10 h-10 object-contain mr-3" />
           ) : (
             <div className="w-10 h-10 bg-slate-100 border border-slate-300 rounded mr-3 flex items-center justify-center text-[8px] text-slate-500 text-center leading-tight">
               NO<br/>LOGO

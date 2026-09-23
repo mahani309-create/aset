@@ -260,7 +260,7 @@ const keRuang = rooms.find(r => r.id === item.keRuanganId);
                         <span className="text-slate-700 line-clamp-1" title={item.alasan}>{item.alasan}</span>
                       </td>
                       <td className="px-6 py-4">
-                        <Badge variant={item.status === "Selesai" ? "success" : item.status === "Selesai" ? "success" : item.status === "Ditolak" ? "destructive" : "warning"}>
+                        <Badge variant={item.status === "Selesai" ? "success" : (item.status as string) === "Ditolak" ? "destructive" : "warning"}>
                           {item.status}
                         </Badge>
                       </td>

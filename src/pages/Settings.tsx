@@ -1,11 +1,37 @@
 import React, { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "../components/ui/Card";
 import { Button } from "../components/ui/Button";
-import { Building2, Users, Database, Globe, Bell, Shield, Download, Upload, Plus, Edit2, Trash2 } from "lucide-react";
+import {
+  Building2,
+  Users,
+  Database,
+  Globe,
+  Bell,
+  Shield,
+  Download,
+  Upload,
+  Plus,
+  Edit2,
+  Trash2,
+  HardDrive,
+  Cloud,
+  RefreshCw,
+  FileSpreadsheet,
+  ExternalLink,
+  CheckCircle2,
+  History,
+  Folder,
+  FileText,
+  Clock,
+  UserCheck,
+  LogOut,
+  AlertCircle
+} from "lucide-react";
 import { useToast } from "../contexts/ToastContext";
 import { useData } from "../contexts/DataContext";
 import { useTheme } from "../contexts/ThemeContext";
 import { useAuth } from "../contexts/AuthContext";
+import { useGoogleDrive } from "../contexts/GoogleDriveContext";
 import { createGoogleSheetsBackup } from "../lib/googleSheets";
 
 export default function Settings() {
@@ -18,6 +44,40 @@ export default function Settings() {
   const { accessToken, loginWithGoogle } = useAuth();
 
   
+  const {
+    isConnected: isDriveConnected,
+    isConnecting: isDriveConnecting,
+    isSyncing: isDriveSyncing,
+    lastSyncedAt: driveLastSyncedAt,
+    syncError: driveSyncError,
+    folderInfo: driveFolderInfo,
+    dbFileInfo: driveDbFileInfo,
+    snapshots: driveSnapshots,
+    autoSync: driveAutoSync,
+    setAutoSync: setDriveAutoSync,
+    connectDrive,
+    disconnectDrive: driveDisconnect,
+    syncNow: driveSyncNow,
+    pullFromDrive: drivePullFromDrive,
+    createSnapshotBackup: driveCreateSnapshot,
+    restoreSnapshotById: driveRestoreSnapshot,
+    exportToSheets: driveExportToSheets,
+    loadSnapshots: driveLoadSnapshots,
+  } = useGoogleDrive();
+
+  const [showDriveDisconnectConfirm, setShowDriveDisconnectConfirm] = useState(false);
+
+  const executeDriveAction = async (action: () => Promise<any> | void) => {
+    if (!isDriveConnected) {
+      const success = await connectDrive(false);
+      if (success) {
+        action();
+      }
+      return;
+    }
+    action();
+  };
+
   // Profil State mapped to Context
   const profil = schoolProfile;
   const setProfil = (newProfile: any) => {
@@ -46,14 +106,13 @@ export default function Settings() {
     { id: "users", name: "Pengguna & Akses", icon: Users },
     { id: "sistem", name: "Preferensi Sistem", icon: Globe },
     { id: "notif", name: "Notifikasi Cerdas", icon: Bell },
-    { id: "backup", name: "Backup & Restore", icon: Database },
+    { id: "backup", name: "Database & Google Drive", icon: HardDrive },
     { id: "keamanan", name: "Keamanan", icon: Shield },
   ];
 
   const handleAction = (msg: string, type: 'info'|'success'|'error' = 'info') => toast(msg, type);
 
   const saveProfil = () => {
-    // In real app, save to context/backend
     handleAction("Profil sekolah berhasil disimpan", "success");
   };
 
@@ -70,59 +129,38 @@ export default function Settings() {
   };
 
   const handleBackup = () => {
-    const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify({ backup: true, date: new Date() }));
+    const fullData = dataContext.getFullDatabase();
+    const blob = new Blob([JSON.stringify(fullData, null, 2)], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
     const downloadAnchorNode = document.createElement('a');
-    downloadAnchorNode.setAttribute("href",     dataStr);
-    downloadAnchorNode.setAttribute("download", "backup_sarpras_" + new Date().getTime() + ".json");
-    document.body.appendChild(downloadAnchorNode); // required for firefox
+    downloadAnchorNode.setAttribute("href", url);
+    downloadAnchorNode.setAttribute("download", "backup_sarpras_" + new Date().toISOString().slice(0, 10) + ".json");
+    document.body.appendChild(downloadAnchorNode);
     downloadAnchorNode.click();
     downloadAnchorNode.remove();
-    handleAction("File backup berhasil diunduh.", "success");
-  };
-
-  const handleGoogleDriveBackup = async (forcePrompt: boolean = false) => {
-    try {
-      setIsBackingUp(true);
-      let token = accessToken;
-      
-      if (!token || forcePrompt) {
-        const loginRes = await loginWithGoogle(forcePrompt);
-        if (!loginRes.success) {
-          throw new Error('Gagal masuk ke Google. ' + (loginRes.code || ''));
-        }
-        token = loginRes.token || accessToken;
-        if (!token) {
-           handleAction("Berhasil masuk, namun token akses belum tersedia. Silakan coba lagi.", "info");
-           return;
-        }
-      }
-      
-      const sheetUrl = await createGoogleSheetsBackup(token, {
-        assets: dataContext.assets,
-        rooms: dataContext.rooms,
-        consumables: dataContext.consumables,
-        borrowings: dataContext.borrowings
-      });
-      
-      toast(`Backup berhasil disimpan di Google Drive!`, "success");
-      window.open(sheetUrl, '_blank');
-    } catch (err: any) {
-      console.error(err);
-      handleAction("Gagal menyimpan ke Google Drive. Pastikan Anda memberikan izin akses Google Sheets.", "error");
-    } finally {
-      setIsBackingUp(false);
-    }
+    URL.revokeObjectURL(url);
+    handleAction("File backup JSON berhasil diunduh.", "success");
   };
 
   const handleRestore = () => {
     const input = document.createElement('input');
     input.type = 'file';
-    input.accept = '.json,.sql';
+    input.accept = '.json';
     input.onchange = (e) => {
-      // simulate restore
-      setTimeout(() => {
-        handleAction("Data berhasil dipulihkan dari file backup.", "success");
-      }, 1000);
+      const file = (e.target as HTMLInputElement).files?.[0];
+      if (file) {
+        const reader = new FileReader();
+        reader.onload = (event) => {
+          try {
+            const parsed = JSON.parse(event.target?.result as string);
+            dataContext.importFullDatabase(parsed);
+            handleAction("Data berhasil dipulihkan dari file backup lokal!", "success");
+          } catch {
+            handleAction("File backup tidak valid atau format rusak.", "error");
+          }
+        };
+        reader.readAsText(file);
+      }
     };
     input.click();
   };
@@ -277,7 +315,7 @@ export default function Settings() {
                       <label className="text-sm font-semibold text-slate-900">Logo Dinas (Kiri - Opsional)</label>
                       <div className="flex items-center gap-4">
                         {profil.logoDinas && (
-                          <div className="w-16 h-16 rounded border border-slate-300 overflow-hidden flex items-center justify-center bg-transparent shrink-0 ">
+                          <div className="w-16 h-16 flex items-center justify-center bg-transparent shrink-0">
                             <img src={profil.logoDinas} alt="Logo Dinas" className="w-full h-full object-contain" />
                           </div>
                         )}
@@ -303,7 +341,7 @@ export default function Settings() {
                       <label className="text-sm font-semibold text-slate-900">Logo Sekolah (Kanan - Opsional)</label>
                       <div className="flex items-center gap-4">
                         {profil.logoSekolah && (
-                          <div className="w-16 h-16 rounded border border-slate-300 overflow-hidden flex items-center justify-center bg-transparent shrink-0 ">
+                          <div className="w-16 h-16 flex items-center justify-center bg-transparent shrink-0">
                             <img src={profil.logoSekolah} alt="Logo Sekolah" className="w-full h-full object-contain" />
                           </div>
                         )}
@@ -327,28 +365,37 @@ export default function Settings() {
 
                     <div className="space-y-2 md:col-span-2">
                       <label className="text-sm font-semibold text-slate-900">Ikon Aplikasi & Tab (Favicon)</label>
-                      <p className="text-xs text-slate-500 mt-0">Digunakan sebagai ikon menu samping (sidebar) dan ikon tab browser. Gunakan rasio 1:1 (persegi).</p>
-                      <div className="flex items-center gap-4 mt-1">
-                        {profil.logoAplikasi && (
-                          <div className="w-16 h-16 rounded border border-slate-300 overflow-hidden flex items-center justify-center bg-transparent shrink-0 ">
-                            <img src={profil.logoAplikasi} alt="Ikon Aplikasi" className="w-full h-full object-contain" />
-                          </div>
-                        )}
-                        <input 
-                          type="file" 
-                          accept="image/*"
-                          onChange={(e) => {
-                            const file = e.target.files?.[0];
-                            if (file) {
-                              const reader = new FileReader();
-                              reader.onloadend = () => {
-                                setProfil({ ...profil, logoAplikasi: reader.result as string });
-                              };
-                              reader.readAsDataURL(file);
-                            }
-                          }}
-                          className="w-full border border-slate-300 bg-white rounded-lg px-3 py-2 text-sm focus:border-primary-500 focus:ring-4 focus:ring-primary-500/10 outline-none transition-all" 
-                        />
+                      <p className="text-xs text-slate-500 mt-0">Digunakan sebagai logo resmi aplikasi, sidebar, header portal peminjaman, dan favicon tab browser (rasio 1:1).</p>
+                      <div className="flex flex-col sm:flex-row sm:items-center gap-4 mt-1">
+                        <div className="w-16 h-16 flex items-center justify-center shrink-0">
+                          <img src={profil.logoAplikasi || "/icon.svg"} alt="Ikon Aplikasi" className="w-full h-full object-contain" />
+                        </div>
+                        <div className="flex-1 space-y-2">
+                          <input 
+                            type="file" 
+                            accept="image/*"
+                            onChange={(e) => {
+                              const file = e.target.files?.[0];
+                              if (file) {
+                                const reader = new FileReader();
+                                reader.onloadend = () => {
+                                  setProfil({ ...profil, logoAplikasi: reader.result as string });
+                                };
+                                reader.readAsDataURL(file);
+                              }
+                            }}
+                            className="w-full border border-slate-300 bg-white rounded-lg px-3 py-2 text-sm focus:border-primary-500 focus:ring-4 focus:ring-primary-500/10 outline-none transition-all" 
+                          />
+                          {profil.logoAplikasi && profil.logoAplikasi !== "/icon.svg" && (
+                            <button
+                              type="button"
+                              onClick={() => setProfil({ ...profil, logoAplikasi: "/icon.svg" })}
+                              className="text-xs text-primary-600 hover:text-primary-800 font-semibold underline"
+                            >
+                              Kembalikan ke Logo Aplikasi Resmi (Default)
+                            </button>
+                          )}
+                        </div>
                       </div>
                     </div>
                   </div>
@@ -714,86 +761,382 @@ export default function Settings() {
               )}
 
               {activeTab === "backup" && (
-                <div className="space-y-6 max-w-2xl">
-                   <div className="p-4 bg-amber-50 rounded-xl border border-amber-200/50 flex gap-3 items-start">
-                     <AlertCircleIcon className="h-5 w-5 text-amber-600 shrink-0 mt-0.5" />
-                     <div className="space-y-1">
-                       <p className="text-sm text-amber-800 font-semibold">Pencadangan Data Sangat Penting!</p>
-                       <p className="text-xs text-amber-700">Lakukan pencadangan (backup) secara rutin untuk mencegah kehilangan KIB. Data yang direstore akan menimpa seluruh data yang ada saat ini.</p>
-                     </div>
-                   </div>
-                   
-                   <div className="grid sm:grid-cols-2 gap-4">
-                      <Card className="border border-slate-300 shadow-sm">
-                        <CardHeader className="pb-3 border-b border-slate-300">
-                          <CardTitle className="text-base text-primary-900 flex items-center gap-2">
-                            <Download className="h-5 w-5 text-primary-600" /> Ekspor Database
-                          </CardTitle>
-                        </CardHeader>
-                        <CardContent className="pt-4 space-y-4">
-                          <p className="text-sm text-slate-700">Unduh seluruh data aset, ruangan, pemeliharaan ke dalam file format JSON, atau simpan ke Google Drive (Spreadsheet).</p>
-                          <div className="space-y-2">
-                            <Button className="w-full" onClick={handleBackup}>
-                              <Download className="h-4 w-4 mr-2" /> Download File Lokal
-                            </Button>
-                            <Button className="w-full bg-green-600 hover:bg-green-700 text-white" onClick={() => handleGoogleDriveBackup(false)} disabled={isBackingUp}>
-                              <Database className="h-4 w-4 mr-2" /> {isBackingUp ? "Menyimpan..." : "Simpan ke Google Drive (Sheets)"}
-                            </Button>
-                            <Button variant="outline" className="w-full border-slate-300 text-slate-700" onClick={() => handleGoogleDriveBackup(true)} disabled={isBackingUp}>
-                              Ganti Akun Google Drive
-                            </Button>
+                <div className="space-y-6 max-w-4xl">
+                  {/* Google Drive Master Cloud Status Banner */}
+                  <div className="relative overflow-hidden p-6 rounded-2xl bg-gradient-to-r from-emerald-600 via-teal-600 to-cyan-700 text-white shadow-lg">
+                    <div className="absolute -right-8 -bottom-8 w-40 h-40 bg-white/10 rounded-full blur-2xl pointer-events-none" />
+                    <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 relative z-10">
+                      <div className="flex items-start gap-3.5 min-w-0 flex-1">
+                        <div className="p-3 bg-white/20 backdrop-blur-md rounded-xl border border-white/30 shadow-inner shrink-0">
+                          <HardDrive className="h-7 w-7 text-white" />
+                        </div>
+                        <div className="min-w-0 flex-1">
+                          <div className="flex items-center gap-2 flex-wrap">
+                            <h3 className="text-lg font-bold text-white">
+                              Google Drive Master Database
+                            </h3>
+                            <span className="px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider bg-emerald-400/30 text-emerald-100 border border-emerald-300/40 rounded-full shrink-0">
+                              Active Cloud v3
+                            </span>
                           </div>
-                        </CardContent>
-                      </Card>
-                      
-                      <Card className="border border-slate-300 shadow-sm">
-                        <CardHeader className="pb-3 border-b border-slate-300">
-                          <CardTitle className="text-base text-rose-900 flex items-center gap-2">
-                            <Upload className="h-5 w-5 text-rose-500" /> Restore Database
+                          <p className="text-emerald-100/90 text-xs mt-1 max-w-xl break-words">
+                            Seluruh data aset, ruangan, peminjaman, dan inventaris tersimpan aman di Google Drive sekolah Anda dengan pencadangan terstruktur dan pemulihan cepat.
+                          </p>
+                        </div>
+                      </div>
+
+                      <div className="flex items-center gap-2 self-start md:self-auto shrink-0 flex-wrap">
+                        {isDriveConnected ? (
+                          <>
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={() => connectDrive(true)}
+                              disabled={isDriveConnecting || isDriveSyncing}
+                              className="h-8 text-xs bg-white/15 hover:bg-white/25 text-white border-white/30 whitespace-nowrap"
+                              title="Ganti akun Google"
+                            >
+                              <UserCheck className="h-3.5 w-3.5 mr-1.5" />
+                              Ganti Akun
+                            </Button>
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={() => setShowDriveDisconnectConfirm(true)}
+                              disabled={isDriveConnecting || isDriveSyncing}
+                              className="h-8 text-xs bg-rose-500/20 hover:bg-rose-500/30 text-rose-100 border-rose-400/40 whitespace-nowrap"
+                              title="Putuskan sambungan Google Drive"
+                            >
+                              <LogOut className="h-3.5 w-3.5 mr-1.5" />
+                              Putuskan
+                            </Button>
+                          </>
+                        ) : (
+                          <Button
+                            size="sm"
+                            onClick={() => connectDrive(false)}
+                            disabled={isDriveConnecting}
+                            className="h-9 px-4 text-xs bg-white hover:bg-emerald-50 text-emerald-900 font-bold shadow-md transition-all active:scale-95 whitespace-nowrap"
+                          >
+                            {isDriveConnecting ? (
+                              <>
+                                <RefreshCw className="h-3.5 w-3.5 mr-1.5 animate-spin text-emerald-700" />
+                                Menghubungkan...
+                              </>
+                            ) : (
+                              <>
+                                <Cloud className="h-4 w-4 mr-1.5 text-emerald-600" />
+                                Hubungkan Sekarang
+                              </>
+                            )}
+                          </Button>
+                        )}
+                      </div>
+                    </div>
+
+                    {/* Disconnect confirmation dialog inside Settings */}
+                    {showDriveDisconnectConfirm && (
+                      <div className="mt-4 p-3 rounded-xl bg-rose-950/80 border border-rose-400/50 backdrop-blur-md flex flex-col sm:flex-row items-center justify-between gap-2.5 text-xs text-rose-100">
+                        <div className="flex items-center gap-2">
+                          <AlertCircle className="h-4 w-4 text-rose-300 shrink-0" />
+                          <span>Lepas sambungan Google Drive dari aplikasi? Data lokal perangkat Anda tetap aman.</span>
+                        </div>
+                        <div className="flex items-center gap-2 shrink-0">
+                          <button
+                            onClick={() => {
+                              driveDisconnect();
+                              setShowDriveDisconnectConfirm(false);
+                            }}
+                            className="px-3 py-1 bg-rose-600 hover:bg-rose-700 text-white rounded-lg font-bold text-xs shadow-sm transition-colors"
+                          >
+                            Ya, Putuskan
+                          </button>
+                          <button
+                            onClick={() => setShowDriveDisconnectConfirm(false)}
+                            className="px-3 py-1 bg-white/20 hover:bg-white/30 text-white rounded-lg font-semibold text-xs transition-colors"
+                          >
+                            Batal
+                          </button>
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Status Info Chips */}
+                    <div className="mt-5 p-3 rounded-xl bg-black/20 backdrop-blur-md border border-white/10 flex flex-wrap items-center justify-between gap-3 text-xs">
+                      <div className="flex items-center gap-2.5">
+                        <span className="relative flex h-3 w-3">
+                          {isDriveConnected ? (
+                            <>
+                              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
+                              <span className="relative inline-flex rounded-full h-3 w-3 bg-emerald-400" />
+                            </>
+                          ) : isDriveConnecting ? (
+                            <RefreshCw className="h-3 w-3 text-amber-300 animate-spin" />
+                          ) : (
+                            <span className="relative inline-flex rounded-full h-3 w-3 bg-amber-400" />
+                          )}
+                        </span>
+                        <div>
+                          <p className="font-semibold text-white">
+                            {isDriveConnected
+                              ? "Tersambung ke Google Drive"
+                              : isDriveConnecting
+                              ? "Sedang Menghubungkan..."
+                              : "Google Drive Belum Tersambung"}
+                          </p>
+                          <p className="text-emerald-100/70 text-[11px]">
+                            {isDriveConnected
+                              ? driveLastSyncedAt
+                                ? `Sinkron Terakhir: ${driveLastSyncedAt.toLocaleTimeString("id-ID")}`
+                                : "Siap disinkronkan ke Master Cloud"
+                              : "Hubungkan akun Google sekolah untuk mengaktifkan Master Cloud Database"}
+                          </p>
+                        </div>
+                      </div>
+
+                      <div className="flex items-center gap-3 text-emerald-100 text-xs">
+                        {driveFolderInfo && (
+                          <a
+                            href={driveFolderInfo.webViewLink}
+                            target="_blank"
+                            rel="noreferrer"
+                            className="flex items-center gap-1 hover:underline text-white font-medium"
+                          >
+                            <Folder className="h-3.5 w-3.5 text-amber-300" />
+                            Buka Folder <ExternalLink className="h-3 w-3" />
+                          </a>
+                        )}
+                        {driveDbFileInfo && (
+                          <a
+                            href={driveDbFileInfo.webViewLink}
+                            target="_blank"
+                            rel="noreferrer"
+                            className="flex items-center gap-1 hover:underline text-white font-medium"
+                          >
+                            <FileText className="h-3.5 w-3.5 text-teal-300" />
+                            File Master JSON <ExternalLink className="h-3 w-3" />
+                          </a>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Drive Sync Error Alert if any */}
+                  {driveSyncError && (
+                    <div className="p-3.5 rounded-xl bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-900/60 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-rose-700 dark:text-rose-300 text-xs">
+                      <div className="flex items-start gap-2.5">
+                        <AlertCircle className="h-4 w-4 shrink-0 mt-0.5" />
+                        <div>
+                          <p className="font-semibold">Terjadi Kendala Sinkronisasi:</p>
+                          <p className="mt-0.5 text-rose-600 dark:text-rose-400">{driveSyncError}</p>
+                        </div>
+                      </div>
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => connectDrive(true)}
+                        disabled={isDriveConnecting}
+                        className="self-start sm:self-auto h-7 text-xs border-rose-300 text-rose-700 hover:bg-rose-100 dark:hover:bg-rose-900/40"
+                      >
+                        <RefreshCw className="h-3 w-3 mr-1" />
+                        Hubungkan Ulang
+                      </Button>
+                    </div>
+                  )}
+
+                  {/* 4 Primary Operational Cards */}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    {/* Sync to Drive */}
+                    <Card className="border border-emerald-200 dark:border-emerald-900/50 bg-emerald-50/30 dark:bg-emerald-950/20 shadow-sm">
+                      <CardHeader className="pb-2">
+                        <CardTitle className="text-sm font-bold text-slate-900 dark:text-slate-100 flex items-center gap-2">
+                          <div className="p-1.5 rounded-lg bg-emerald-600 text-white">
+                            <Upload className="h-4 w-4" />
+                          </div>
+                          Sinkronkan ke Google Drive
+                        </CardTitle>
+                      </CardHeader>
+                      <CardContent className="space-y-3 pt-1">
+                        <p className="text-xs text-slate-600 dark:text-slate-400">
+                          Unggah seluruh data aset, ruangan, peminjaman, dan riwayat mutasi terkini ke file master Google Drive.
+                        </p>
+                        <Button
+                          onClick={() => executeDriveAction(() => driveSyncNow())}
+                          disabled={isDriveSyncing || isDriveConnecting}
+                          className="w-full bg-emerald-600 hover:bg-emerald-700 text-white text-xs h-9"
+                        >
+                          <Upload className="h-3.5 w-3.5 mr-2" />
+                          {isDriveSyncing ? "Menyinkronkan..." : "Sinkronkan Sekarang"}
+                        </Button>
+                      </CardContent>
+                    </Card>
+
+                    {/* Pull from Drive */}
+                    <Card className="border border-cyan-200 dark:border-cyan-900/50 bg-cyan-50/30 dark:bg-cyan-950/20 shadow-sm">
+                      <CardHeader className="pb-2">
+                        <CardTitle className="text-sm font-bold text-slate-900 dark:text-slate-100 flex items-center gap-2">
+                          <div className="p-1.5 rounded-lg bg-cyan-600 text-white">
+                            <Download className="h-4 w-4" />
+                          </div>
+                          Tarik Database dari Drive
+                        </CardTitle>
+                      </CardHeader>
+                      <CardContent className="space-y-3 pt-1">
+                        <p className="text-xs text-slate-600 dark:text-slate-400">
+                          Unduh dan perbarui data aplikasi dari file master Google Drive jika ada perubahan dari perangkat lain.
+                        </p>
+                        <Button
+                          variant="outline"
+                          onClick={() => executeDriveAction(() => drivePullFromDrive())}
+                          disabled={isDriveSyncing || isDriveConnecting}
+                          className="w-full border-cyan-300 text-cyan-800 dark:text-cyan-300 hover:bg-cyan-100/50 text-xs h-9"
+                        >
+                          <Download className="h-3.5 w-3.5 mr-2 text-cyan-600" />
+                          Tarik Data Terbaru
+                        </Button>
+                      </CardContent>
+                    </Card>
+
+                    {/* Create Snapshot */}
+                    <Card className="border border-indigo-200 dark:border-indigo-900/50 bg-indigo-50/30 dark:bg-indigo-950/20 shadow-sm">
+                      <CardHeader className="pb-2">
+                        <CardTitle className="text-sm font-bold text-slate-900 dark:text-slate-100 flex items-center gap-2">
+                          <div className="p-1.5 rounded-lg bg-indigo-600 text-white">
+                            <History className="h-4 w-4" />
+                          </div>
+                          Buat Snapshot Cadangan
+                        </CardTitle>
+                      </CardHeader>
+                      <CardContent className="space-y-3 pt-1">
+                        <p className="text-xs text-slate-600 dark:text-slate-400">
+                          Buat salinan arsip bertanggal di Google Drive untuk disimpan secara permanen sebelum melakukan perubahan masal.
+                        </p>
+                        <Button
+                          variant="outline"
+                          onClick={() => executeDriveAction(() => driveCreateSnapshot("Manual Backup dari Pengaturan"))}
+                          disabled={isDriveSyncing || isDriveConnecting}
+                          className="w-full border-indigo-300 text-indigo-800 dark:text-indigo-300 hover:bg-indigo-100/50 text-xs h-9"
+                        >
+                          <History className="h-3.5 w-3.5 mr-2 text-indigo-600" />
+                          Buat Snapshot Bertanggal
+                        </Button>
+                      </CardContent>
+                    </Card>
+
+                    {/* Export Sheets */}
+                    <Card className="border border-teal-200 dark:border-teal-900/50 bg-teal-50/30 dark:bg-teal-950/20 shadow-sm">
+                      <CardHeader className="pb-2">
+                        <CardTitle className="text-sm font-bold text-slate-900 dark:text-slate-100 flex items-center gap-2">
+                          <div className="p-1.5 rounded-lg bg-teal-600 text-white">
+                            <FileSpreadsheet className="h-4 w-4" />
+                          </div>
+                          Ekspor ke Google Sheets
+                        </CardTitle>
+                      </CardHeader>
+                      <CardContent className="space-y-3 pt-1">
+                        <p className="text-xs text-slate-600 dark:text-slate-400">
+                          Buat spreadsheet terformat di Google Drive berisi lembar kerja KIB A-E, daftar ruangan, dan peminjaman.
+                        </p>
+                        <Button
+                          variant="outline"
+                          onClick={() => executeDriveAction(async () => {
+                            const url = await driveExportToSheets();
+                            if (url) window.open(url, "_blank");
+                          })}
+                          disabled={isDriveSyncing || isDriveConnecting}
+                          className="w-full border-teal-300 text-teal-800 dark:text-teal-300 hover:bg-teal-100/50 text-xs h-9"
+                        >
+                          <FileSpreadsheet className="h-3.5 w-3.5 mr-2 text-teal-600" />
+                          Buat File Google Sheets
+                        </Button>
+                      </CardContent>
+                    </Card>
+                  </div>
+
+                  {/* Auto Sync Real-time Switch */}
+                  <div className="p-4 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 flex items-center justify-between shadow-sm">
+                    <div className="space-y-0.5 pr-4">
+                      <div className="flex items-center gap-2">
+                        <Cloud className="h-4 w-4 text-emerald-600" />
+                        <span className="text-sm font-bold text-slate-900 dark:text-slate-100">
+                          Sinkronisasi Otomatis Real-time (Auto-Sync)
+                        </span>
+                      </div>
+                      <p className="text-xs text-slate-600 dark:text-slate-400">
+                        Otomatis menyimpan setiap penambahan atau pembaruan sarpras ke Google Drive di latar belakang tanpa repot menekan tombol simpan.
+                      </p>
+                    </div>
+                    <label className="relative inline-flex items-center cursor-pointer shrink-0">
+                      <input
+                        type="checkbox"
+                        checked={driveAutoSync}
+                        onChange={(e) => setDriveAutoSync(e.target.checked)}
+                        className="sr-only peer"
+                      />
+                      <div className="w-11 h-6 bg-slate-300 peer-focus:outline-none rounded-full peer dark:bg-slate-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-emerald-600"></div>
+                    </label>
+                  </div>
+
+                  {/* Offline Backup Fallback */}
+                  <div className="pt-2">
+                    <h4 className="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400 mb-3">
+                      Pencadangan Berkas Lokal (Cadangan Tambahan)
+                    </h4>
+                    <div className="grid sm:grid-cols-2 gap-4">
+                      <Card className="border border-slate-200 dark:border-slate-800 shadow-sm bg-white dark:bg-slate-900">
+                        <CardHeader className="pb-3 border-b border-slate-100 dark:border-slate-800">
+                          <CardTitle className="text-sm font-bold text-slate-800 dark:text-slate-200 flex items-center gap-2">
+                            <Download className="h-4 w-4 text-primary-600" /> Unduh Berkas JSON Lokal
                           </CardTitle>
                         </CardHeader>
-                        <CardContent className="pt-4 space-y-4">
-                          <p className="text-sm text-slate-700">Pulihkan data dari file backup sebelumnya. <strong className="text-rose-600">Peringatan:</strong> Data saat ini akan diganti.</p>
-                          <Button variant="outline" className="w-full border-slate-300 text-slate-700 hover:bg-slate-50" onClick={handleRestore}>
-                            <Upload className="h-4 w-4 mr-2" /> Pilih File Backup
+                        <CardContent className="pt-4 space-y-3">
+                          <p className="text-xs text-slate-600 dark:text-slate-400">
+                            Unduh seluruh database sarpras ke perangkat laptop/komputer dalam format file JSON offline.
+                          </p>
+                          <Button variant="outline" className="w-full text-xs h-9" onClick={handleBackup}>
+                            <Download className="h-3.5 w-3.5 mr-2 text-primary-600" /> Unduh File JSON
                           </Button>
                         </CardContent>
                       </Card>
-                   </div>
+
+                      <Card className="border border-slate-200 dark:border-slate-800 shadow-sm bg-white dark:bg-slate-900">
+                        <CardHeader className="pb-3 border-b border-slate-100 dark:border-slate-800">
+                          <CardTitle className="text-sm font-bold text-rose-800 dark:text-rose-300 flex items-center gap-2">
+                            <Upload className="h-4 w-4 text-rose-500" /> Pulihkan dari Berkas JSON
+                          </CardTitle>
+                        </CardHeader>
+                        <CardContent className="pt-4 space-y-3">
+                          <p className="text-xs text-slate-600 dark:text-slate-400">
+                            Pulihkan seluruh data sarpras dari file backup JSON offline yang telah disimpan sebelumnya.
+                          </p>
+                          <Button
+                            variant="outline"
+                            className="w-full text-xs h-9 border-rose-200 dark:border-rose-900/50 text-rose-700 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/30"
+                            onClick={handleRestore}
+                          >
+                            <Upload className="h-3.5 w-3.5 mr-2 text-rose-500" /> Pilih File JSON Lokal
+                          </Button>
+                        </CardContent>
+                      </Card>
+                    </div>
+                  </div>
                 </div>
               )}
 
               {activeTab === "keamanan" && (
                 <div className="space-y-6 max-w-xl">
                   <div className="space-y-4">
-                    <h3 className="font-semibold text-slate-800">Ubah Kata Sandi</h3>
+                    <h3 className="font-semibold text-slate-800">Ubah PIN Admin</h3>
+                    <p className="text-sm text-slate-600">PIN ini digunakan sebagai lapisan keamanan tambahan saat akan masuk ke aplikasi.</p>
                     <div className="grid gap-2">
-                      <label className="text-sm font-semibold text-slate-900">Kata Sandi Saat Ini</label>
+                      <label className="text-sm font-semibold text-slate-900">PIN Admin (Otomatis Tersimpan)</label>
                       <input 
-                        type="password" 
-                        placeholder="••••••••"
+                        type="text" 
+                        value={profil.adminPin || "123456"}
+                        onChange={(e) => setProfil({ adminPin: e.target.value })}
                         className="w-full border border-slate-300 bg-white rounded-lg px-3 py-2 text-sm focus:border-primary-500 focus:ring-4 focus:ring-primary-500/10 outline-none transition-all" 
                       />
-                    </div>
-                    <div className="grid gap-2">
-                      <label className="text-sm font-semibold text-slate-900">Kata Sandi Baru</label>
-                      <input 
-                        type="password" 
-                        placeholder="••••••••"
-                        className="w-full border border-slate-300 bg-white rounded-lg px-3 py-2 text-sm focus:border-primary-500 focus:ring-4 focus:ring-primary-500/10 outline-none transition-all" 
-                      />
-                      <p className="text-xs text-slate-700">Minimal 8 karakter, kombinasi huruf dan angka.</p>
-                    </div>
-                    <div className="grid gap-2">
-                      <label className="text-sm font-semibold text-slate-900">Konfirmasi Kata Sandi Baru</label>
-                      <input 
-                        type="password" 
-                        placeholder="••••••••"
-                        className="w-full border border-slate-300 bg-white rounded-lg px-3 py-2 text-sm focus:border-primary-500 focus:ring-4 focus:ring-primary-500/10 outline-none transition-all" 
-                      />
-                    </div>
-                    <div className="pt-2">
-                      <Button onClick={saveKeamanan}>Perbarui Kata Sandi</Button>
+                      <p className="text-xs text-slate-700">Pastikan Anda mengingat PIN ini (Default: 123456).</p>
                     </div>
                   </div>
                   

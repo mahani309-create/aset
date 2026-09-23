@@ -19,7 +19,7 @@ export function PrintBarcodesModal({ isOpen, onClose, assets, roomName }: PrintB
   const [filterCategory, setFilterCategory] = useState<string>("Semua");
 
   const categories = useMemo(() => {
-    const cats = new Set(assets.map(a => a.kategori || a.kib).filter(Boolean));
+    const cats = new Set(assets.map(a => a.kategori || (a as any).kib).filter(Boolean));
     return ["Semua", ...Array.from(cats)] as string[];
   }, [assets]);
 
@@ -32,7 +32,7 @@ export function PrintBarcodesModal({ isOpen, onClose, assets, roomName }: PrintB
       const matchRoom = filterRoom === "Semua" || 
         (rooms.find(r => r.id === asset.ruanganId)?.nama === filterRoom);
       const matchCategory = filterCategory === "Semua" || 
-        ((asset.kategori || asset.kib) === filterCategory);
+        ((asset.kategori || (asset as any).kib) === filterCategory);
       return matchRoom && matchCategory;
     });
   }, [assets, filterRoom, filterCategory, rooms]);

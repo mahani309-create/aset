@@ -2,7 +2,7 @@ import * as React from "react"
 import { cn } from "../../lib/utils"
 
 export interface BadgeProps extends React.ComponentProps<"div"> {
-  variant?: "default" | "secondary" | "destructive" | "outline" | "success" | "warning";
+  variant?: "default" | "secondary" | "destructive" | "outline" | "success" | "warning" | "info";
   className?: string;
   children?: React.ReactNode;
 }
@@ -18,6 +18,7 @@ function Badge({ className, variant = "default", ...props }: BadgeProps) {
           "border-transparent bg-rose-100 text-rose-800": variant === "destructive",
           "border-transparent bg-emerald-100 text-emerald-800": variant === "success",
           "border-transparent bg-amber-100 text-amber-800": variant === "warning",
+          "border-transparent bg-cyan-100 text-cyan-800": variant === "info",
           "text-slate-950 border-slate-300": variant === "outline",
         },
         className

@@ -1,6 +1,6 @@
 {
   "name": "Remix: Remix: Remix: SIM Sarpras SMPv3",
-  "description": "Sistem Informasi Manajemen Sarana dan Prasarana (Aset) untuk Sekolah Menengah Pertama. Lengkap, detail, dan elegan.",
+  "description": "Sistem Informasi Manajemen Sarana dan Prasarana (Aset) SMP dengan integrasi Master Database Google Drive, sinkronisasi otomatis, dan manajemen KIB lengkap.",
   "requestFramePermissions": [],
-  "majorCapabilities": []
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
 }

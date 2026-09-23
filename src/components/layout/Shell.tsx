@@ -22,6 +22,8 @@ import {
   Moon,
   WifiOff,
   Mic,
+  HardDrive,
+  Cloud,
   Menu,
   X,
 } from "lucide-react";
@@ -29,7 +31,9 @@ import { cn } from "../../lib/utils";
 import { useToast } from "../../contexts/ToastContext";
 import { useData } from "../../contexts/DataContext";
 import { useAuth } from "../../contexts/AuthContext";
+import { useGoogleDrive } from "../../contexts/GoogleDriveContext";
 import { ScannerModal } from "../shared/ScannerModal";
+import { GoogleDriveManagerModal } from "../shared/GoogleDriveManagerModal";
 
 const navGroups = [
   {
@@ -75,7 +79,7 @@ export function Sidebar({ isOpen, onClose }: { isOpen?: boolean; onClose?: () =>
   const toast = useToast();
   const { logout } = useAuth();
   const { schoolProfile } = useData();
-  const appIcon = schoolProfile.logoAplikasi || schoolProfile.logoSekolah;
+  const appIcon = schoolProfile.logoAplikasi || schoolProfile.logoSekolah || "/icon.svg";
 
   return (
     <>
@@ -93,15 +97,14 @@ export function Sidebar({ isOpen, onClose }: { isOpen?: boolean; onClose?: () =>
         isOpen ? "translate-x-0" : "-translate-x-full"
       )}>
         <div className="flex h-16 shrink-0 items-center justify-between border-b border-slate-200 dark:border-slate-800 px-6">
-          <div className="flex items-center gap-2 font-bold text-lg tracking-tight text-primary-950 dark:text-white">
-            <div className={cn("h-8 w-8 rounded-lg flex items-center justify-center overflow-hidden shrink-0", appIcon ? "bg-transparent" : "bg-primary-600")}>
-              {appIcon ? (
-                <img src={appIcon} alt="App Icon" className="h-full w-full object-contain" />
-              ) : (
-                <Package className="h-5 w-5 text-primary-foreground" />
-              )}
+          <div className="flex items-center gap-3 font-bold text-lg tracking-tight text-primary-950 dark:text-white">
+            <div className="h-9 w-9 flex items-center justify-center shrink-0">
+              <img src={appIcon} alt="Logo Aplikasi" className="h-full w-full object-contain" />
             </div>
-            <span>Sarpras SMP</span>
+            <div className="flex flex-col">
+              <span className="leading-tight text-base font-extrabold">Sarpras SMP</span>
+              <span className="text-[10px] font-semibold text-primary-600 dark:text-primary-400 tracking-wider uppercase">Master Cloud</span>
+            </div>
           </div>
           
           {/* Close button for mobile */}
@@ -147,7 +150,31 @@ export function Sidebar({ isOpen, onClose }: { isOpen?: boolean; onClose?: () =>
         ))}
       </div>
       <div className="shrink-0 p-4 border-t border-slate-200 dark:border-slate-800 bg-white/50 dark:bg-slate-900/50">
-        <div className="mb-4 px-3 flex flex-col pt-2 border-slate-200">
+        <div className="mb-3">
+          <button
+            type="button"
+            onClick={() => {
+              onClose?.();
+              window.dispatchEvent(new CustomEvent("open-gdrive-manager"));
+            }}
+            className="w-full flex items-center justify-between p-2.5 rounded-xl border border-emerald-200 dark:border-emerald-900/60 bg-emerald-50/70 dark:bg-emerald-950/30 hover:bg-emerald-100/70 transition-all text-xs text-left group"
+          >
+            <div className="flex items-center gap-2.5 truncate">
+              <div className="p-1.5 rounded-lg bg-emerald-600 text-white shadow-sm">
+                <HardDrive className="h-3.5 w-3.5" />
+              </div>
+              <div className="truncate">
+                <p className="font-bold text-slate-800 dark:text-slate-200">Google Drive DB</p>
+                <p className="text-[10px] text-emerald-700 dark:text-emerald-400 font-medium">Master Database Cloud</p>
+              </div>
+            </div>
+            <span className="relative flex h-2 w-2">
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+              <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+            </span>
+          </button>
+        </div>
+        <div className="mb-4 px-3 flex flex-col pt-1 border-slate-200">
           <span className="text-[10px] uppercase font-bold text-slate-600 tracking-wider">
             Dikembangkan Oleh
           </span>
@@ -177,12 +204,20 @@ export function Header() {
   const toast = useToast();
   const { assets, rooms } = useData();
   const { themeMode, setThemeMode } = useTheme();
+  const { isConnected, isConnecting, isSyncing, lastSyncedAt } = useGoogleDrive();
+  const [isDriveModalOpen, setIsDriveModalOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [isScannerOpen, setIsScannerOpen] = useState(false);
   const [isListening, setIsListening] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
   const navigate = useNavigate();
+
+  useEffect(() => {
+    const handleOpenDrive = () => setIsDriveModalOpen(true);
+    window.addEventListener("open-gdrive-manager", handleOpenDrive);
+    return () => window.removeEventListener("open-gdrive-manager", handleOpenDrive);
+  }, []);
 
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
@@ -242,8 +277,8 @@ export function Header() {
     searchResults.assets.length > 0 || searchResults.rooms.length > 0;
 
   return (
-    <header className="sticky print:hidden top-0 z-30 flex h-14 md:h-16 items-center gap-4 border-b border-slate-200 dark:border-slate-800 bg-white/50 dark:bg-slate-900/50 backdrop-blur-xl px-4 sm:px-6">
-      <div className="w-full flex-1">
+    <header className="sticky print:hidden top-0 z-30 flex h-14 md:h-16 items-center justify-between gap-2 sm:gap-4 border-b border-slate-200 dark:border-slate-800 bg-white/50 dark:bg-slate-900/50 backdrop-blur-xl px-3 sm:px-6">
+      <div className="flex-1 min-w-0 max-w-xs sm:max-w-md lg:max-w-lg">
         <form
           onSubmit={(e) => {
             e.preventDefault();
@@ -253,7 +288,7 @@ export function Header() {
             }
           }}
         >
-          <div className="relative flex items-center max-w-full sm:w-80 lg:w-96" ref={dropdownRef}>
+          <div className="relative flex items-center w-full" ref={dropdownRef}>
             <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-slate-600 pointer-events-none" />
             <input
               type="search"
@@ -264,26 +299,26 @@ export function Header() {
                 setIsDropdownOpen(true);
               }}
               onFocus={() => setIsDropdownOpen(true)}
-              className="w-full appearance-none bg-slate-100/50 dark:bg-slate-800/50 pl-9 pr-20 py-1.5 md:py-2 rounded-lg text-xs md:text-sm border border-slate-200 dark:border-slate-700 focus:border-primary-500 focus:bg-white dark:focus:bg-slate-900 focus:outline-none focus:ring-4 focus:ring-primary-500/10 transition-all"
+              className="w-full appearance-none bg-slate-100/50 dark:bg-slate-800/50 pl-9 pr-16 sm:pr-20 py-1.5 md:py-2 rounded-lg text-xs md:text-sm border border-slate-200 dark:border-slate-700 focus:border-primary-500 focus:bg-white dark:focus:bg-slate-900 focus:outline-none focus:ring-4 focus:ring-primary-500/10 transition-all"
             />
             <div className="absolute right-1 flex items-center">
               <button
                 type="button"
                 onClick={startVoiceSearch}
-                className={cn("p-1.5 rounded-md hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors",
+                className={cn("p-1 sm:p-1.5 rounded-md hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors",
                   isListening ? "text-primary-600 bg-primary-50 animate-pulse" : "text-slate-600 hover:text-primary-600"
                 )}
                 title="Pencarian Suara"
               >
-                <Mic className="h-4 w-4" />
+                <Mic className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
               </button>
               <button
                 type="button"
                 onClick={() => setIsScannerOpen(true)}
-                className="text-slate-600 hover:text-primary-600 bg-transparent p-1.5 rounded-md hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+                className="text-slate-600 hover:text-primary-600 bg-transparent p-1 sm:p-1.5 rounded-md hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
                 title="Scan Barcode/QR Code"
               >
-                <ScanLine className="h-4 w-4" />
+                <ScanLine className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
               </button>
             </div>
 
@@ -368,29 +403,85 @@ export function Header() {
           </div>
         </form>
       </div>
-      <div className="flex items-center gap-2 sm:gap-4">
+
+      <div className="flex items-center gap-1.5 sm:gap-2.5 shrink-0 ml-auto">
+        {/* Google Drive Master DB Quick Button */}
+        <button
+          type="button"
+          onClick={() => setIsDriveModalOpen(true)}
+          className={cn(
+            "flex items-center gap-1.5 px-2.5 py-1 sm:py-1.5 rounded-full border text-[11px] sm:text-xs font-semibold transition-all shadow-sm active:scale-95 shrink-0 whitespace-nowrap",
+            isConnected
+              ? "bg-emerald-50 text-emerald-800 border-emerald-300 dark:bg-emerald-950/40 dark:text-emerald-300 dark:border-emerald-800 hover:bg-emerald-100"
+              : isConnecting
+              ? "bg-amber-50 text-amber-800 border-amber-300 dark:bg-amber-950/40 dark:text-amber-300 dark:border-amber-800 animate-pulse"
+              : "bg-slate-100 text-slate-700 border-slate-300 dark:bg-slate-800 dark:text-slate-300 dark:border-slate-700 hover:bg-slate-200"
+          )}
+          title={
+            isConnected
+              ? `Google Drive Master DB: Tersinkron (${lastSyncedAt ? lastSyncedAt.toLocaleTimeString("id-ID") : "Aktif"})`
+              : isConnecting
+              ? "Sedang menghubungkan ke Google Drive..."
+              : "Klik untuk menghubungkan Google Drive Master Database"
+          }
+        >
+          <HardDrive
+            className={cn(
+              "h-3.5 w-3.5 shrink-0",
+              isConnected ? "text-emerald-600" : isConnecting ? "text-amber-600" : "text-slate-500",
+              (isSyncing || isConnecting) && "animate-spin text-emerald-600"
+            )}
+          />
+          <span className="whitespace-nowrap font-medium">
+            {isConnecting ? (
+              "Menghubungkan..."
+            ) : isSyncing ? (
+              "Menyinkronkan..."
+            ) : isConnected ? (
+              "Drive DB"
+            ) : (
+              <>
+                <span className="hidden sm:inline">Hubungkan Drive</span>
+                <span className="sm:hidden">Drive</span>
+              </>
+            )}
+          </span>
+          <span className="relative flex h-2 w-2 shrink-0">
+            {isConnected && (
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+            )}
+            <span
+              className={cn(
+                "relative inline-flex rounded-full h-2 w-2",
+                isConnected ? (isSyncing ? "bg-amber-400" : "bg-emerald-500") : isConnecting ? "bg-amber-500" : "bg-slate-400"
+              )}
+            ></span>
+          </span>
+        </button>
+
         <button
           onClick={() => setThemeMode(themeMode === "dark" ? "light" : "dark")}
-          className="p-1.5 sm:p-2 text-slate-600 hover:text-primary-600 transition-colors bg-white dark:bg-slate-800 rounded-full border border-slate-200 dark:border-slate-800 shadow-sm"
+          className="p-1.5 sm:p-2 text-slate-600 hover:text-primary-600 transition-colors bg-white dark:bg-slate-800 rounded-full border border-slate-200 dark:border-slate-800 shadow-sm shrink-0"
           title="Ganti Tema (Gelap/Terang)"
         >
           {themeMode === "dark" ? <Sun className="h-4 w-4 sm:h-5 sm:w-5" /> : <Moon className="h-4 w-4 sm:h-5 sm:w-5" />}
         </button>
         <button
           onClick={() => toast("Belum ada notifikasi baru", "info")}
-          className="relative p-1.5 sm:p-2 text-slate-600 hover:text-slate-700 transition-colors bg-white dark:bg-slate-800 rounded-full border border-slate-200 dark:border-slate-800 shadow-sm"
+          className="relative p-1.5 sm:p-2 text-slate-600 hover:text-slate-700 transition-colors bg-white dark:bg-slate-800 rounded-full border border-slate-200 dark:border-slate-800 shadow-sm shrink-0"
         >
           <Bell className="h-4 w-4 sm:h-5 sm:w-5" />
           <span className="absolute top-[2px] right-[2px] sm:top-[3px] sm:right-[5px] h-1.5 w-1.5 sm:h-2 sm:w-2 rounded-full bg-rose-500 ring-2 ring-white" />
         </button>
         <div
-          className="h-7 w-7 sm:h-9 sm:w-9 ml-0 sm:ml-1 rounded-full bg-primary-100 border border-primary-200 flex items-center justify-center cursor-pointer hover:bg-primary-200 shadow-sm"
+          className="h-7 w-7 sm:h-9 sm:w-9 rounded-full bg-primary-100 border border-primary-200 flex items-center justify-center cursor-pointer hover:bg-primary-200 shadow-sm shrink-0"
           onClick={() => toast("Mode edit profil admin", "info")}
         >
           <span className="text-xs sm:text-sm font-bold text-primary-700">A</span>
         </div>
       </div>
       <ScannerModal isOpen={isScannerOpen} onClose={() => setIsScannerOpen(false)} />
+      <GoogleDriveManagerModal isOpen={isDriveModalOpen} onClose={() => setIsDriveModalOpen(false)} />
     </header>
   );
 }
