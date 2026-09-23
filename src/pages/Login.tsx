@@ -2,19 +2,33 @@ import React, { useState } from "react";
 import { useNavigate, Navigate } from "react-router-dom";
 import { useAuth } from "../contexts/AuthContext";
 import { useData } from "../contexts/DataContext";
-import { Package, Lock, User, ArrowRight, ShieldCheck } from "lucide-react";
+import { 
+  Lock, 
+  User, 
+  ArrowRight, 
+  ShieldCheck, 
+  Eye, 
+  EyeOff, 
+  AlertCircle,
+  Cloud,
+  CheckCircle2,
+  KeyRound,
+  ArrowLeft
+} from "lucide-react";
 import { useToast } from "../contexts/ToastContext";
 import { motion } from "motion/react";
 
 export default function Login() {
-  const { loginWithGoogle, isAuthenticated } = useAuth();
+  const { loginAdmin, isAuthenticated } = useAuth();
   const { schoolProfile } = useData();
   const navigate = useNavigate();
   const toast = useToast();
   
-  const [pinInput, setPinInput] = useState("");
-  const [pinError, setPinError] = useState(false);
-  const [isPinVerified, setIsPinVerified] = useState(false);
+  const [username, setUsername] = useState("admin");
+  const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
+  const [errorMsg, setErrorMsg] = useState<string | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   
   const appIcon = schoolProfile.logoAplikasi || schoolProfile.logoSekolah || "/icon.svg";
 
@@ -22,97 +36,115 @@ export default function Login() {
     return <Navigate to="/" replace />;
   }
 
-  const handleVerifyPin = () => {
-    const correctPin = schoolProfile.adminPin || "123456";
-    if (pinInput === correctPin) {
-      setIsPinVerified(true);
-      setPinError(false);
-    } else {
-      setPinError(true);
-      toast("PIN Admin salah. Silakan coba lagi.", "error");
-    }
-  };
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setErrorMsg(null);
 
-  const handleGoogleLogin = async () => {
-    const result = await loginWithGoogle();
-    if (result.success) {
-      toast("Login berhasil. Selamat datang!", "success");
-      navigate("/");
-    } else {
-      if (result.code === 'auth/popup-closed-by-user' || result.code === 'auth/cancelled-popup-request') {
-        toast("Login dibatalkan. Silakan coba lagi.", "info");
+    if (!username.trim()) {
+      setErrorMsg("Harap masukkan username admin.");
+      return;
+    }
+    if (!password.trim()) {
+      setErrorMsg("Harap masukkan password atau PIN admin.");
+      return;
+    }
+
+    setIsSubmitting(true);
+    try {
+      const result = await loginAdmin(username, password);
+      if (result.success) {
+        toast("Login berhasil! Selamat datang di SIM Sarpras.", "success");
+        navigate("/");
       } else {
-        toast("Gagal masuk dengan Google. Silakan coba lagi.", "error");
+        setErrorMsg(result.message || "Username atau password salah.");
+        toast(result.message || "Gagal masuk. Periksa username dan password Anda.", "error");
       }
+    } catch (err: any) {
+      setErrorMsg("Terjadi kesalahan saat memverifikasi akun.");
+      toast("Terjadi kesalahan saat masuk.", "error");
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 flex items-center justify-center p-4 selection:bg-primary-100 selection:text-primary-900 relative overflow-hidden">
-      {/* Decorative background blobs */}
+    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-indigo-950 flex items-center justify-center p-4 selection:bg-primary-500 selection:text-white relative overflow-hidden">
+      {/* Futuristic Ambient Glowing Elements */}
       <motion.div 
         animate={{ 
           rotate: [0, 360],
-          scale: [1, 1.1, 1],
+          scale: [1, 1.15, 1],
         }}
-        transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
-        className="absolute top-1/4 left-1/4 w-[500px] h-[500px] bg-primary-200/50 rounded-full blur-[100px] -translate-x-1/2 -translate-y-1/2 pointer-events-none"
+        transition={{ duration: 24, repeat: Infinity, ease: "linear" }}
+        className="absolute top-1/4 left-1/4 w-[520px] h-[520px] bg-primary-600/25 rounded-full blur-[120px] -translate-x-1/2 -translate-y-1/2 pointer-events-none"
       />
       <motion.div 
         animate={{ 
           rotate: [360, 0],
-          scale: [1, 1.2, 1],
+          scale: [1, 1.25, 1],
         }}
-        transition={{ duration: 25, repeat: Infinity, ease: "linear" }}
-        className="absolute bottom-1/4 right-1/4 w-[600px] h-[600px] bg-blue-200/50 rounded-full blur-[120px] translate-x-1/2 translate-y-1/2 pointer-events-none"
+        transition={{ duration: 28, repeat: Infinity, ease: "linear" }}
+        className="absolute bottom-1/4 right-1/4 w-[580px] h-[580px] bg-cyan-500/20 rounded-full blur-[140px] translate-x-1/2 translate-y-1/2 pointer-events-none"
       />
 
       <motion.div 
-        initial={{ opacity: 0, y: 20 }}
+        initial={{ opacity: 0, y: 25 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.8, ease: "easeOut" }}
-        className="max-w-5xl w-full bg-white/80 backdrop-blur-xl border border-white rounded-3xl shadow-2xl overflow-hidden flex flex-col md:flex-row relative z-10"
+        transition={{ duration: 0.7, ease: "easeOut" }}
+        className="max-w-5xl w-full bg-white/95 dark:bg-slate-900/90 backdrop-blur-2xl border border-white/20 dark:border-slate-800/80 rounded-3xl shadow-2xl overflow-hidden flex flex-col md:flex-row relative z-10"
       >
-        {/* Left Side: Branding / Graphic */}
-        <div className="md:w-1/2 bg-gradient-to-br from-primary-600 to-primary-800 p-8 md:p-12 text-white flex flex-col justify-between relative overflow-hidden">
-          {/* Animated overlapping circles inside banner */}
-          <motion.div 
-            initial={{ scale: 0.8, opacity: 0 }}
-            animate={{ scale: 1, opacity: 0.5 }}
-            transition={{ delay: 0.5, duration: 1.5, ease: "easeOut" }}
-            className="absolute top-0 right-0 -translate-y-12 translate-x-12 w-64 h-64 bg-primary-400 rounded-full blur-3xl"
-          ></motion.div>
-          <motion.div 
-            initial={{ scale: 0.8, opacity: 0 }}
-            animate={{ scale: 1, opacity: 0.5 }}
-            transition={{ delay: 0.7, duration: 1.5, ease: "easeOut" }}
-            className="absolute bottom-0 left-0 translate-y-12 -translate-x-12 w-80 h-80 bg-primary-900 rounded-full blur-3xl"
-          ></motion.div>
+        {/* Left Side: Futuristic Branding / Graphic Banner */}
+        <div className="md:w-1/2 bg-gradient-to-br from-primary-700 via-primary-800 to-slate-900 p-8 md:p-12 text-white flex flex-col justify-between relative overflow-hidden">
+          <div className="absolute top-0 right-0 -translate-y-12 translate-x-12 w-64 h-64 bg-cyan-400/20 rounded-full blur-3xl" />
+          <div className="absolute bottom-0 left-0 translate-y-12 -translate-x-12 w-80 h-80 bg-primary-500/20 rounded-full blur-3xl" />
           
           <div className="relative z-10">
+            {/* App Emblem & Title */}
             <motion.div 
               initial={{ x: -20, opacity: 0 }}
               animate={{ x: 0, opacity: 1 }}
               transition={{ delay: 0.2, duration: 0.6 }}
-              className="flex items-center gap-3 font-bold text-2xl tracking-tight mb-12"
+              className="flex items-center gap-3.5 mb-10"
             >
               <div className="h-12 w-12 flex items-center justify-center shrink-0">
                 <img src={appIcon} alt="Logo Aplikasi" className="h-full w-full object-contain" />
               </div>
-              <span>Sarpras SMP</span>
+              <div>
+                <span className="font-extrabold text-2xl tracking-tight block">SIM Sarpras SMP</span>
+                <span className="text-[11px] font-semibold uppercase tracking-wider text-primary-200">
+                  {schoolProfile.nama || "Sistem Inventaris Sekolah"}
+                </span>
+              </div>
             </motion.div>
             
             <motion.div
               initial={{ y: 20, opacity: 0 }}
               animate={{ y: 0, opacity: 1 }}
               transition={{ delay: 0.4, duration: 0.6 }}
+              className="space-y-4"
             >
-              <h1 className="text-4xl md:text-5xl font-extrabold leading-tight mb-6 bg-clip-text text-transparent bg-gradient-to-r from-white to-primary-100">
-                Sistem Informasi Manajemen Sarana & Prasarana
+              <h1 className="text-3xl md:text-4xl font-extrabold leading-tight text-white">
+                Portal Manajemen Sarana & Prasarana
               </h1>
-              <p className="text-primary-100 text-lg leading-relaxed max-w-md">
-                Kelola aset sekolah dengan mudah, cepat, dan transparan. Pantau ketersediaan, kondisi, dan riwayat pergerakan barang.
+              <p className="text-primary-100/90 text-sm md:text-base leading-relaxed">
+                Kelola aset, ruangan, peminjaman barang, serta riwayat mutasi dengan transparan, akurat, dan terstruktur.
               </p>
+
+              {/* Feature Highlights */}
+              <div className="pt-4 space-y-2.5 text-xs text-primary-100/80">
+                <div className="flex items-center gap-2">
+                  <CheckCircle2 className="h-4 w-4 text-emerald-400 shrink-0" />
+                  <span>Autentikasi admin mandiri & kontrol akses penuh</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Cloud className="h-4 w-4 text-cyan-300 shrink-0" />
+                  <span>Pencadangan cloud & database terisolasi Google Drive</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <ShieldCheck className="h-4 w-4 text-indigo-300 shrink-0" />
+                  <span>Pencatatan inventaris KIB (A-F) dan pelabelan QR Code</span>
+                </div>
+              </div>
             </motion.div>
           </div>
 
@@ -120,121 +152,144 @@ export default function Login() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 0.8, duration: 0.6 }}
-            className="relative z-10 mt-16 pt-8 border-t border-white/10"
+            className="relative z-10 mt-10 pt-6 border-t border-white/10 flex items-center justify-between"
           >
-            <p className="text-sm text-primary-200 font-medium mb-1 tracking-wide uppercase">Developed By</p>
-            <div className="flex items-center gap-3">
-              <div className="h-10 w-10 rounded-full bg-white/10 backdrop-blur-sm border border-white/20 flex items-center justify-center">
-                <ShieldCheck className="h-5 w-5 text-primary-100" />
-              </div>
-              <p className="text-xl font-bold text-white tracking-tight">Khabibu Rohman</p>
+            <div>
+              <p className="text-[11px] text-primary-200 font-semibold tracking-wider uppercase">Dikembangkan Oleh</p>
+              <p className="text-base font-bold text-white tracking-tight">Khabibu Rohman</p>
+            </div>
+            <div className="h-9 w-9 rounded-xl bg-white/10 backdrop-blur-sm border border-white/15 flex items-center justify-center">
+              <ShieldCheck className="h-5 w-5 text-cyan-300" />
             </div>
           </motion.div>
         </div>
 
-        {/* Right Side: Login Form */}
-        <div className="md:w-1/2 p-8 md:p-12 lg:p-16 flex flex-col justify-center bg-white/50">
+        {/* Right Side: Admin Username & Password Login Form */}
+        <div className="md:w-1/2 p-7 md:p-11 lg:p-14 flex flex-col justify-center bg-white dark:bg-slate-900">
           <motion.div 
             initial={{ x: 20, opacity: 0 }}
             animate={{ x: 0, opacity: 1 }}
             transition={{ delay: 0.4, duration: 0.6 }}
             className="max-w-sm w-full mx-auto"
           >
-            <div className="mb-10 text-center md:text-left">
-              <h2 className="text-3xl font-extrabold text-slate-900 tracking-tight">Selamat Datang 👋</h2>
-              <p className="text-slate-700 mt-3 text-sm flex items-center justify-center md:justify-start gap-1">
-                {isPinVerified ? "Silakan masuk menggunakan " : "Masukkan PIN Admin untuk "} <strong className="text-slate-700">{isPinVerified ? "Akun Google Anda" : "melanjutkan"}.</strong>
+            <div className="mb-8">
+              <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-primary-50 dark:bg-primary-950/60 text-primary-700 dark:text-primary-300 border border-primary-200 dark:border-primary-800 text-xs font-bold mb-3">
+                <KeyRound className="h-3.5 w-3.5" />
+                Login Administrator
+              </div>
+              <h2 className="text-2xl sm:text-3xl font-extrabold text-slate-900 dark:text-white tracking-tight">
+                Selamat Datang 👋
+              </h2>
+              <p className="text-slate-600 dark:text-slate-400 mt-2 text-xs sm:text-sm">
+                Masukkan kredensial <strong>username</strong> dan <strong>password</strong> admin untuk masuk ke sistem.
               </p>
             </div>
 
-            <div className="space-y-6">
-              {!isPinVerified ? (
-                <motion.div
-                  initial={{ y: 10, opacity: 0 }}
-                  animate={{ y: 0, opacity: 1 }}
-                  transition={{ delay: 0.5, duration: 0.4 }}
-                  className="space-y-4"
-                >
-                  <div className="space-y-2">
-                    <label className="text-sm font-semibold text-slate-900">PIN Admin</label>
-                    <div className="relative">
-                      <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                        <Lock className="h-5 w-5 text-slate-400" />
-                      </div>
-                      <input 
-                        type="password" 
-                        value={pinInput}
-                        onChange={(e) => {
-                          setPinInput(e.target.value);
-                          setPinError(false);
-                        }}
-                        onKeyDown={(e) => {
-                          if (e.key === 'Enter') handleVerifyPin();
-                        }}
-                        className={`w-full pl-10 pr-4 py-3 border rounded-xl text-sm focus:outline-none focus:ring-4 transition-all ${pinError ? 'border-red-300 focus:border-red-500 focus:ring-red-500/10' : 'border-slate-300 focus:border-primary-500 focus:ring-primary-500/10'}`}
-                        placeholder="••••••"
-                        autoFocus
-                      />
-                    </div>
-                    {pinError && <p className="text-xs text-red-500 font-medium">PIN yang dimasukkan salah.</p>}
-                  </div>
-                  <button
-                    type="button"
-                    onClick={handleVerifyPin}
-                    className="w-full flex items-center justify-center py-3 px-4 bg-primary-600 hover:bg-primary-700 text-white rounded-xl shadow-sm text-sm font-bold transition-all gap-2"
-                  >
-                    <span>Lanjutkan</span>
-                    <ArrowRight className="h-4 w-4" />
-                  </button>
-                </motion.div>
-              ) : (
-                <motion.div
-                  initial={{ y: 10, opacity: 0 }}
-                  animate={{ y: 0, opacity: 1 }}
-                  transition={{ duration: 0.4 }}
-                >
-                  <button
-                    type="button"
-                    onClick={handleGoogleLogin}
-                    className="w-full flex items-center justify-center py-4 px-4 border border-slate-300 rounded-2xl shadow-sm text-sm font-bold text-slate-700 bg-white hover:bg-slate-50 active:scale-[0.98] focus:outline-none focus:ring-4 focus:ring-primary-500/30 transition-all gap-3"
-                  >
-                    <svg className="h-5 w-5" viewBox="0 0 24 24">
-                      <path
-                        d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
-                        fill="#4285F4"
-                      />
-                      <path
-                        d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"
-                        fill="#34A853"
-                      />
-                      <path
-                        d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"
-                        fill="#FBBC05"
-                      />
-                      <path
-                        d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"
-                        fill="#EA4335"
-                      />
-                    </svg>
-                    <span>Lanjutkan dengan Google</span>
-                  </button>
-                </motion.div>
-              )}
-              
-              <motion.div
-                initial={{ y: 10, opacity: 0 }}
-                animate={{ y: 0, opacity: 1 }}
-                transition={{ delay: 0.6, duration: 0.4 }}
-                className="mt-6 text-center"
+            {/* Error Message Alert */}
+            {errorMsg && (
+              <motion.div 
+                initial={{ opacity: 0, y: -8 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="mb-5 p-3 rounded-xl bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-900/60 text-rose-700 dark:text-rose-300 text-xs flex items-start gap-2.5"
               >
-                <button
-                  type="button"
-                  onClick={() => navigate('/portal-peminjaman')}
-                  className="text-sm font-medium text-slate-600 hover:text-primary-600 transition-colors"
-                >
-                  Kembali ke Portal Peminjaman
-                </button>
+                <AlertCircle className="h-4 w-4 shrink-0 mt-0.5" />
+                <p className="flex-1 font-medium">{errorMsg}</p>
               </motion.div>
+            )}
+
+            <form onSubmit={handleSubmit} className="space-y-4">
+              {/* Username Input */}
+              <div className="space-y-1.5">
+                <label className="text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300">
+                  Username Admin
+                </label>
+                <div className="relative">
+                  <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
+                    <User className="h-4 w-4" />
+                  </div>
+                  <input
+                    type="text"
+                    value={username}
+                    onChange={(e) => {
+                      setUsername(e.target.value);
+                      setErrorMsg(null);
+                    }}
+                    placeholder="admin"
+                    autoFocus
+                    autoComplete="username"
+                    className="w-full pl-10 pr-4 py-2.5 text-sm bg-slate-50 dark:bg-slate-800/80 border border-slate-300 dark:border-slate-700 rounded-xl text-slate-900 dark:text-white placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all"
+                  />
+                </div>
+              </div>
+
+              {/* Password Input */}
+              <div className="space-y-1.5">
+                <div className="flex items-center justify-between">
+                  <label className="text-xs font-bold uppercase tracking-wider text-slate-700 dark:text-slate-300">
+                    Password / PIN
+                  </label>
+                  <span className="text-[11px] text-slate-500 dark:text-slate-400">
+                    Default: <code className="bg-slate-100 dark:bg-slate-800 px-1 py-0.5 rounded font-mono text-[10px]">admin123</code>
+                  </span>
+                </div>
+                <div className="relative">
+                  <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-400">
+                    <Lock className="h-4 w-4" />
+                  </div>
+                  <input
+                    type={showPassword ? "text" : "password"}
+                    value={password}
+                    onChange={(e) => {
+                      setPassword(e.target.value);
+                      setErrorMsg(null);
+                    }}
+                    placeholder="••••••••"
+                    autoComplete="current-password"
+                    className="w-full pl-10 pr-10 py-2.5 text-sm bg-slate-50 dark:bg-slate-800/80 border border-slate-300 dark:border-slate-700 rounded-xl text-slate-900 dark:text-white placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all font-mono"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute inset-y-0 right-0 pr-3.5 flex items-center text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition-colors"
+                    title={showPassword ? "Sembunyikan password" : "Tampilkan password"}
+                  >
+                    {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                  </button>
+                </div>
+              </div>
+
+              {/* Submit Button */}
+              <button
+                type="submit"
+                disabled={isSubmitting}
+                className="w-full mt-2 py-3 px-4 bg-primary-600 hover:bg-primary-700 active:scale-[0.99] text-white font-bold rounded-xl shadow-lg shadow-primary-600/25 text-sm flex items-center justify-center gap-2 transition-all disabled:opacity-70 disabled:cursor-not-allowed cursor-pointer"
+              >
+                <span>{isSubmitting ? "Memverifikasi..." : "Masuk ke Dashboard"}</span>
+                <ArrowRight className="h-4 w-4" />
+              </button>
+            </form>
+
+            {/* Cloud Backup Notification Info */}
+            <div className="mt-6 p-3 rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200/80 dark:border-slate-800 text-[11px] text-slate-600 dark:text-slate-400 space-y-1">
+              <div className="flex items-center gap-1.5 font-bold text-slate-800 dark:text-slate-200">
+                <Cloud className="h-3.5 w-3.5 text-emerald-600" />
+                Pencadangan Akun Google:
+              </div>
+              <p className="leading-relaxed">
+                Akun Google digunakan khusus untuk fitur pencadangan (backup) dan sinkronisasi Google Drive yang dapat dihubungkan langsung dari dashboard setelah login.
+              </p>
+            </div>
+
+            {/* Return Link */}
+            <div className="mt-6 text-center">
+              <button
+                type="button"
+                onClick={() => navigate("/portal-peminjaman")}
+                className="inline-flex items-center gap-1.5 text-xs font-semibold text-slate-500 hover:text-primary-600 dark:text-slate-400 dark:hover:text-primary-400 transition-colors"
+              >
+                <ArrowLeft className="h-3.5 w-3.5" />
+                Kembali ke Portal Peminjaman
+              </button>
             </div>
           </motion.div>
         </div>

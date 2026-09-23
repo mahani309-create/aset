@@ -41,7 +41,7 @@ export default function Settings() {
   const dataContext = useData();
   const { schoolProfile, setSchoolProfile } = dataContext;
   const { themeColor, setThemeColor, themeMode, setThemeMode, themeStyle, setThemeStyle, uiScale, setUiScale, fontColor, setFontColor } = useTheme();
-  const { accessToken, loginWithGoogle } = useAuth();
+  const { accessToken, loginWithGoogle, user: googleUser } = useAuth();
 
   
   const {
@@ -1126,17 +1126,98 @@ export default function Settings() {
               {activeTab === "keamanan" && (
                 <div className="space-y-6 max-w-xl">
                   <div className="space-y-4">
-                    <h3 className="font-semibold text-slate-800">Ubah PIN Admin</h3>
-                    <p className="text-sm text-slate-600">PIN ini digunakan sebagai lapisan keamanan tambahan saat akan masuk ke aplikasi.</p>
-                    <div className="grid gap-2">
-                      <label className="text-sm font-semibold text-slate-900">PIN Admin (Otomatis Tersimpan)</label>
-                      <input 
-                        type="text" 
-                        value={profil.adminPin || "123456"}
-                        onChange={(e) => setProfil({ adminPin: e.target.value })}
-                        className="w-full border border-slate-300 bg-white rounded-lg px-3 py-2 text-sm focus:border-primary-500 focus:ring-4 focus:ring-primary-500/10 outline-none transition-all" 
-                      />
-                      <p className="text-xs text-slate-700">Pastikan Anda mengingat PIN ini (Default: 123456).</p>
+                    <h3 className="font-semibold text-slate-800 dark:text-slate-100 flex items-center gap-2">
+                      <Shield className="h-4 w-4 text-primary-600" />
+                      Kredensial Login Administrator
+                    </h3>
+                    <p className="text-sm text-slate-600 dark:text-slate-400">
+                      Kredensial ini digunakan saat Anda masuk ke dalam dashboard administrator aplikasi.
+                    </p>
+
+                    <div className="grid gap-4">
+                      {/* Username Admin */}
+                      <div className="grid gap-1.5">
+                        <label className="text-sm font-semibold text-slate-900 dark:text-slate-100">
+                          Username Admin
+                        </label>
+                        <input 
+                          type="text" 
+                          value={profil.adminUsername || "admin"}
+                          onChange={(e) => setProfil({ adminUsername: e.target.value })}
+                          placeholder="admin"
+                          className="w-full border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 rounded-lg px-3 py-2 text-sm focus:border-primary-500 focus:ring-4 focus:ring-primary-500/10 outline-none transition-all" 
+                        />
+                        <p className="text-xs text-slate-500 dark:text-slate-400">Username default: <code>admin</code></p>
+                      </div>
+
+                      {/* Password Admin */}
+                      <div className="grid gap-1.5">
+                        <label className="text-sm font-semibold text-slate-900 dark:text-slate-100">
+                          Password Admin
+                        </label>
+                        <input 
+                          type="text" 
+                          value={profil.adminPassword || "admin123"}
+                          onChange={(e) => setProfil({ adminPassword: e.target.value })}
+                          placeholder="admin123"
+                          className="w-full border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 rounded-lg px-3 py-2 text-sm focus:border-primary-500 focus:ring-4 focus:ring-primary-500/10 outline-none transition-all font-mono" 
+                        />
+                        <p className="text-xs text-slate-500 dark:text-slate-400">Password default: <code>admin123</code></p>
+                      </div>
+
+                      {/* PIN Cepat */}
+                      <div className="grid gap-1.5">
+                        <label className="text-sm font-semibold text-slate-900 dark:text-slate-100">
+                          PIN Akses Alternatif (6 Angka)
+                        </label>
+                        <input 
+                          type="text" 
+                          value={profil.adminPin || "123456"}
+                          onChange={(e) => setProfil({ adminPin: e.target.value })}
+                          placeholder="123456"
+                          maxLength={6}
+                          className="w-full border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 rounded-lg px-3 py-2 text-sm focus:border-primary-500 focus:ring-4 focus:ring-primary-500/10 outline-none transition-all font-mono" 
+                        />
+                        <p className="text-xs text-slate-500 dark:text-slate-400">Dapat digunakan sebagai alternatif pengganti password (Default: <code>123456</code>).</p>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="h-px bg-slate-200 dark:bg-slate-800 my-6"></div>
+
+                  {/* Google Account for Backup Information */}
+                  <div className="space-y-4">
+                    <h3 className="font-semibold text-slate-800 dark:text-slate-100 flex items-center gap-2">
+                      <Cloud className="h-4 w-4 text-emerald-600" />
+                      Akun Google (Khusus Backup & Cloud Drive)
+                    </h3>
+                    <p className="text-sm text-slate-600 dark:text-slate-400 leading-relaxed">
+                      Akun Google tidak diwajibkan untuk login aplikasi, melainkan digunakan khusus untuk pencadangan database master (<code>sim_sarpras_db.json</code>), snapshot arsip, dan ekspor spreadsheet Google Sheets.
+                    </p>
+
+                    <div className="p-3.5 rounded-xl border border-emerald-200 dark:border-emerald-900/60 bg-emerald-50/50 dark:bg-emerald-950/20 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
+                      <div>
+                        <div className="flex items-center gap-2">
+                          <span className={`h-2.5 w-2.5 rounded-full ${isDriveConnected ? "bg-emerald-500 animate-pulse" : "bg-slate-400"}`} />
+                          <p className="font-bold text-slate-900 dark:text-slate-100">
+                            {isDriveConnected ? "Google Drive Backup Aktif" : "Google Drive Belum Tersambung"}
+                          </p>
+                        </div>
+                        <p className="text-slate-600 dark:text-slate-400 mt-1 text-[11px]">
+                          {isDriveConnected
+                            ? `Akun Backup: ${googleUser?.email || "Akun Google Terhubung"}`
+                            : "Hubungkan akun Google sekolah (@belajar.id / Gmail) untuk pencadangan otomatis."}
+                        </p>
+                      </div>
+
+                      <Button
+                        size="sm"
+                        onClick={() => window.dispatchEvent(new CustomEvent("open-gdrive-manager"))}
+                        className="bg-emerald-600 hover:bg-emerald-700 text-white font-bold h-8 text-xs shrink-0"
+                      >
+                        <HardDrive className="h-3.5 w-3.5 mr-1.5" />
+                        Kelola Backup Drive
+                      </Button>
                     </div>
                   </div>
                   

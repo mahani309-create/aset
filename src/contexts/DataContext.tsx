@@ -24,6 +24,8 @@ export interface SchoolProfile {
   logoSekolah?: string;
   logoAplikasi?: string;
   adminPin?: string;
+  adminUsername?: string;
+  adminPassword?: string;
 }
 
 const defaultProfile: SchoolProfile = {
@@ -42,7 +44,9 @@ const defaultProfile: SchoolProfile = {
   logoDinas: "",
   logoSekolah: "",
   logoAplikasi: "/icon.svg",
-  adminPin: "123456"
+  adminPin: "123456",
+  adminUsername: "admin",
+  adminPassword: "admin123"
 };
 
 interface DataContextType {
@@ -83,8 +87,11 @@ function useFirestoreDocument<T>(docId: string, initialValue: T) {
       const item = window.localStorage.getItem(`sarpras_${docId}`);
       if (item) {
         const parsed = JSON.parse(item);
-        if (docId === 'schoolProfile' && parsed && !parsed.logoAplikasi) {
-          parsed.logoAplikasi = '/icon.svg';
+        if (docId === 'schoolProfile' && parsed) {
+          if (!parsed.logoAplikasi) parsed.logoAplikasi = '/icon.svg';
+          if (!parsed.adminUsername) parsed.adminUsername = 'admin';
+          if (!parsed.adminPassword) parsed.adminPassword = 'admin123';
+          if (!parsed.adminPin) parsed.adminPin = '123456';
         }
         return parsed;
       }

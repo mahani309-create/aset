@@ -77,7 +77,7 @@ const navGroups = [
 export function Sidebar({ isOpen, onClose }: { isOpen?: boolean; onClose?: () => void }) {
   const location = useLocation();
   const toast = useToast();
-  const { logout } = useAuth();
+  const { logout, adminUser } = useAuth();
   const { schoolProfile } = useData();
   const appIcon = schoolProfile.logoAplikasi || schoolProfile.logoSekolah || "/icon.svg";
 
@@ -174,8 +174,27 @@ export function Sidebar({ isOpen, onClose }: { isOpen?: boolean; onClose?: () =>
             </span>
           </button>
         </div>
-        <div className="mb-4 px-3 flex flex-col pt-1 border-slate-200">
-          <span className="text-[10px] uppercase font-bold text-slate-600 tracking-wider">
+
+        {/* Current Logged-in Admin User Info */}
+        <div className="mb-3 px-2.5 py-2 rounded-xl bg-slate-100 dark:bg-slate-800/80 border border-slate-200/80 dark:border-slate-700/80 flex items-center gap-2.5">
+          <div className="h-7 w-7 rounded-lg bg-primary-600 text-white flex items-center justify-center font-bold text-xs shrink-0 shadow-sm">
+            {adminUser?.username?.[0]?.toUpperCase() || "A"}
+          </div>
+          <div className="min-w-0 flex-1">
+            <div className="flex items-center gap-1.5">
+              <p className="text-xs font-bold text-slate-800 dark:text-slate-200 truncate">
+                {adminUser?.username || "admin"}
+              </p>
+              <span className="px-1.5 py-0.5 bg-primary-100 dark:bg-primary-950/80 text-primary-700 dark:text-primary-300 text-[9px] font-bold rounded">
+                Admin
+              </span>
+            </div>
+            <p className="text-[10px] text-slate-500 dark:text-slate-400 truncate">Akun Administrator</p>
+          </div>
+        </div>
+
+        <div className="mb-3 px-3 flex flex-col pt-1 border-slate-200">
+          <span className="text-[10px] uppercase font-bold text-slate-600 dark:text-slate-400 tracking-wider">
             Dikembangkan Oleh
           </span>
           <span className="text-xs font-semibold text-primary-600 dark:text-primary-400 mt-0.5">
@@ -184,10 +203,10 @@ export function Sidebar({ isOpen, onClose }: { isOpen?: boolean; onClose?: () =>
         </div>
         <button
           onClick={() => {
-            toast("Berhasil keluar.", "success");
+            toast("Berhasil keluar dari akun admin.", "success");
             logout();
           }}
-          className="flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium text-slate-700 transition-all hover:text-rose-600 hover:bg-rose-50"
+          className="flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium text-slate-700 dark:text-slate-300 transition-all hover:text-rose-600 dark:hover:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-950/30 cursor-pointer"
         >
           <LogOut className="h-4 w-4 shrink-0" />
           Keluar
@@ -204,6 +223,7 @@ export function Header() {
   const toast = useToast();
   const { assets, rooms } = useData();
   const { themeMode, setThemeMode } = useTheme();
+  const { adminUser } = useAuth();
   const { isConnected, isConnecting, isSyncing, lastSyncedAt } = useGoogleDrive();
   const [isDriveModalOpen, setIsDriveModalOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
@@ -474,10 +494,13 @@ export function Header() {
           <span className="absolute top-[2px] right-[2px] sm:top-[3px] sm:right-[5px] h-1.5 w-1.5 sm:h-2 sm:w-2 rounded-full bg-rose-500 ring-2 ring-white" />
         </button>
         <div
-          className="h-7 w-7 sm:h-9 sm:w-9 rounded-full bg-primary-100 border border-primary-200 flex items-center justify-center cursor-pointer hover:bg-primary-200 shadow-sm shrink-0"
-          onClick={() => toast("Mode edit profil admin", "info")}
+          className="h-7 w-7 sm:h-9 sm:w-9 rounded-full bg-primary-100 dark:bg-primary-950/80 border border-primary-200 dark:border-primary-800 flex items-center justify-center cursor-pointer hover:bg-primary-200 dark:hover:bg-primary-900 transition-all shadow-sm shrink-0"
+          title={`Masuk sebagai ${adminUser?.username || "admin"}. Klik untuk Pengaturan.`}
+          onClick={() => navigate("/settings")}
         >
-          <span className="text-xs sm:text-sm font-bold text-primary-700">A</span>
+          <span className="text-xs sm:text-sm font-bold text-primary-700 dark:text-primary-300">
+            {adminUser?.username?.[0]?.toUpperCase() || "A"}
+          </span>
         </div>
       </div>
       <ScannerModal isOpen={isScannerOpen} onClose={() => setIsScannerOpen(false)} />
