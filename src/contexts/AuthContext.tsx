@@ -191,7 +191,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       } else if (error.code === 'auth/network-request-failed') {
         userFriendlyMessage = "Gagal terhubung ke server Google. Periksa koneksi internet Anda.";
       } else if (error.code === 'auth/unauthorized-domain') {
-        userFriendlyMessage = "Domain aplikasi ini belum diizinkan pada konfigurasi Google Authentication.";
+        const domain = typeof window !== 'undefined' ? window.location.hostname : 'domain Anda';
+        userFriendlyMessage = `Domain ${domain} belum terdaftar di Authorized Domains Firebase. Silakan tambahkan "${domain}" di Firebase Console > Authentication > Settings > Authorized domains agar Google Drive dapat terhubung di Vercel.`;
       }
       return { success: false, code: error.code, message: userFriendlyMessage };
     }

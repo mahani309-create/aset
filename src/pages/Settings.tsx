@@ -25,7 +25,8 @@ import {
   Clock,
   UserCheck,
   LogOut,
-  AlertCircle
+  AlertCircle,
+  Copy
 } from "lucide-react";
 import { useToast } from "../contexts/ToastContext";
 import { useData } from "../contexts/DataContext";
@@ -1119,6 +1120,86 @@ export default function Settings() {
                         </CardContent>
                       </Card>
                     </div>
+
+                    {/* Vercel & Google Drive Centralized Database Deployment Guide */}
+                    <Card className="border border-indigo-200 dark:border-indigo-900/60 bg-gradient-to-br from-indigo-50/60 to-purple-50/40 dark:from-indigo-950/20 dark:to-purple-950/20 shadow-sm overflow-hidden">
+                      <CardHeader className="pb-3 border-b border-indigo-100 dark:border-indigo-900/40">
+                        <div className="flex items-center justify-between flex-wrap gap-2">
+                          <CardTitle className="text-sm font-bold text-indigo-900 dark:text-indigo-200 flex items-center gap-2">
+                            <Globe className="h-4 w-4 text-indigo-600" />
+                            Panduan Hosting Online Vercel (Database Terpusat Google Drive)
+                          </CardTitle>
+                          <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-indigo-600 text-white">
+                            Siap Online
+                          </span>
+                        </div>
+                        <CardDescription className="text-xs text-indigo-700/80 dark:text-indigo-300/80">
+                          Aplikasi dapat diakses online oleh siapa saja lewat link Vercel, sementara database tetap terpusat di Google Drive sekolah.
+                        </CardDescription>
+                      </CardHeader>
+                      <CardContent className="pt-4 space-y-3.5 text-xs text-slate-700 dark:text-slate-300">
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                          <div className="p-3 bg-white dark:bg-slate-900 rounded-xl border border-indigo-100 dark:border-indigo-900/40">
+                            <span className="inline-flex items-center justify-center w-5 h-5 rounded-full bg-indigo-600 text-white font-bold text-[10px] mb-2">1</span>
+                            <p className="font-bold text-slate-900 dark:text-white">Push ke GitHub & Vercel</p>
+                            <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-1 leading-relaxed">
+                              File <code>vercel.json</code> sudah disiapkan. Cukup import repo ke Vercel (Build: <code>npm run build</code>, Output: <code>dist</code>).
+                            </p>
+                          </div>
+                          <div className="p-3 bg-white dark:bg-slate-900 rounded-xl border border-indigo-100 dark:border-indigo-900/40">
+                            <span className="inline-flex items-center justify-center w-5 h-5 rounded-full bg-indigo-600 text-white font-bold text-[10px] mb-2">2</span>
+                            <p className="font-bold text-slate-900 dark:text-white">Daftarkan Domain Vercel</p>
+                            <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-1 leading-relaxed">
+                              Tambahkan domain Vercel Anda (misal: <code>*.vercel.app</code>) ke Firebase Console &gt; Authentication &gt; Settings &gt; Authorized domains.
+                            </p>
+                          </div>
+                          <div className="p-3 bg-white dark:bg-slate-900 rounded-xl border border-indigo-100 dark:border-indigo-900/40">
+                            <span className="inline-flex items-center justify-center w-5 h-5 rounded-full bg-indigo-600 text-white font-bold text-[10px] mb-2">3</span>
+                            <p className="font-bold text-slate-900 dark:text-white">Hubungkan Google Drive</p>
+                            <p className="text-[11px] text-slate-500 dark:text-slate-400 mt-1 leading-relaxed">
+                              Masuk via username admin, lalu klik &quot;Hubungkan Drive&quot;. File <code>sim_sarpras_db.json</code> otomatis menjadi pusat data real-time.
+                            </p>
+                          </div>
+                        </div>
+
+                        <div className="p-3 bg-white/80 dark:bg-slate-900/80 rounded-xl border border-indigo-200/70 dark:border-indigo-800/60 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                          <div className="space-y-0.5">
+                            <div className="flex items-center gap-2">
+                              <ExternalLink className="h-4 w-4 text-indigo-600 shrink-0" />
+                              <span className="text-xs font-bold text-slate-800 dark:text-slate-200">
+                                Link Langsung Firebase Console:
+                              </span>
+                            </div>
+                            <p className="text-[11px] text-slate-500 dark:text-slate-400 font-mono">
+                              Project ID: <span className="font-bold text-indigo-600 dark:text-indigo-400">gen-lang-client-0062540886</span>
+                            </p>
+                          </div>
+                          <div className="flex items-center gap-2 shrink-0">
+                            <a
+                              href="https://console.firebase.google.com/project/gen-lang-client-0062540886/authentication/settings"
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold transition-all shadow-sm cursor-pointer"
+                            >
+                              <ExternalLink className="h-3.5 w-3.5" />
+                              Buka Authorized Domains
+                            </a>
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              className="text-xs h-8 text-indigo-700 dark:text-indigo-300 border-indigo-300 dark:border-indigo-800"
+                              onClick={() => {
+                                navigator.clipboard.writeText("https://console.firebase.google.com/project/gen-lang-client-0062540886/authentication/settings");
+                                toast("Link Firebase Console berhasil disalin!", "success");
+                              }}
+                            >
+                              <Copy className="h-3.5 w-3.5 mr-1" />
+                              Salin Link
+                            </Button>
+                          </div>
+                        </div>
+                      </CardContent>
+                    </Card>
                   </div>
                 </div>
               )}

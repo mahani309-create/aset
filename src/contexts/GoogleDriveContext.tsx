@@ -155,6 +155,27 @@ export function GoogleDriveProvider({ children }: { children: React.ReactNode })
         const dbFile = await findDatabaseFile(token, folder.id);
         if (dbFile) {
           updateDbFileInfo(dbFile);
+          try {
+            const remoteDb = await readDatabaseFromGoogleDrive(token, dbFile.id);
+            if (remoteDb && typeof remoteDb === "object" && (remoteDb.assets || remoteDb.schoolProfile || remoteDb.rooms)) {
+              dataContext.importFullDatabase(remoteDb);
+              recordSyncSuccess();
+              toast("Database terpusat berhasil dimuat dari Google Drive!", "success");
+            }
+          } catch (readErr) {
+            console.warn("Could not auto-import from Google Drive on connect:", readErr);
+          }
+        } else {
+          // If no database file exists yet on Google Drive, save current data as initial master database
+          try {
+            const currentData = dataContext.getFullDatabase();
+            const created = await saveDatabaseToGoogleDrive(token, currentData, folder.id);
+            updateDbFileInfo(created);
+            recordSyncSuccess();
+            toast("Database master awal berhasil disimpan ke Google Drive!", "success");
+          } catch (initErr) {
+            console.warn("Could not auto-create initial db file on Google Drive:", initErr);
+          }
         }
 
         toast("Google Drive terhubung sebagai Master Database!", "success");
